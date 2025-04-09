@@ -79,13 +79,14 @@
       let allMarkers = [];
       let infowindow = null;
 
-      fetch("store_data.json")
-        .then(res => res.json())
-        .then(data => {
-          allData = data;
-          renderFilters(data);
-          renderMap(data);
-        });
+     fetch("store_data.json")
+  .then(res => res.json())
+  .then(data => {
+    allData = data;
+    renderFilters(data);
+    // 처음엔 마커 안 보여줌
+  });
+
 
       function renderFilters(data) {
         const yearSet = new Set();
