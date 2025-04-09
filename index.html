@@ -195,9 +195,10 @@
           const marker = new kakao.maps.Marker({
             position: new kakao.maps.LatLng(store.lat, store.lon),
             image: new kakao.maps.MarkerImage(
-              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png",
-              new kakao.maps.Size(24, 35)
-            )
+  "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_p.png",  // ✅ 기본 핀
+  new kakao.maps.Size(24, 35)
+)
+
           });
 
           const savedMemo = localStorage.getItem(store.lat + "," + store.lon) || "";
