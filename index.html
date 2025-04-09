@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title> 연습용 지도 </title>
+  <title>연습(카카오)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { box-sizing: border-box; font-family: sans-serif; }
@@ -44,7 +44,6 @@
       margin: 4px 0;
     }
   </style>
-  <!-- ✅ autoload=false 설정 -->
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&autoload=false&libraries=clusterer"></script>
 </head>
 <body>
@@ -60,16 +59,15 @@
   </div>
   <div id="map"></div>
 
-  <!-- ✅ 모든 코드를 kakao.maps.load 안에 감싸기 -->
   <script>
     kakao.maps.load(() => {
-      let mapContainer = document.getElementById('map');
-      let map = new kakao.maps.Map(mapContainer, {
+      const mapContainer = document.getElementById('map');
+      const map = new kakao.maps.Map(mapContainer, {
         center: new kakao.maps.LatLng(35.8714, 128.6014),
         level: 6
       });
 
-      let clusterer = new kakao.maps.MarkerClusterer({
+      const clusterer = new kakao.maps.MarkerClusterer({
         map: map,
         averageCenter: true,
         minLevel: 6
@@ -79,14 +77,13 @@
       let allMarkers = [];
       let infowindow = null;
 
-     fetch("store_data.json")
-  .then(res => res.json())
-  .then(data => {
-    allData = data;
-    renderFilters(data);
-    // 처음엔 마커 안 보여줌
-  });
-
+      fetch("store_data.json")
+        .then(res => res.json())
+        .then(data => {
+          allData = data;
+          renderFilters(data);
+          // 처음엔 마커 렌더링 안 함
+        });
 
       function renderFilters(data) {
         const yearSet = new Set();
@@ -139,6 +136,13 @@
 
         const storeList = document.getElementById("storeList");
         storeList.innerHTML = "";
+
+        if (data.length === 0) {
+          storeList.innerHTML = "<div style='padding:5px; color:gray;'>🔍 조건에 맞는 업소가 없습니다.</div>";
+          return;
+        }
+
+        storeList.insertAdjacentHTML("afterbegin", `<div style="padding:5px; color:#333;">🔎 총 ${data.length}개 업소</div>`);
 
         data.forEach(store => {
           const marker = new kakao.maps.Marker({
