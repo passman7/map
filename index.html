@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>대구 담배소매점 지도 (카카오)</title>
+  <title> 연습용 지도 </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { box-sizing: border-box; font-family: sans-serif; }
@@ -45,6 +44,8 @@
       margin: 4px 0;
     }
   </style>
+  <!-- ✅ autoload=false 설정 -->
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&autoload=false&libraries=clusterer"></script>
 </head>
 <body>
   <div id="sidebar">
@@ -59,133 +60,135 @@
   </div>
   <div id="map"></div>
 
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=clusterer"></script>
+  <!-- ✅ 모든 코드를 kakao.maps.load 안에 감싸기 -->
   <script>
-    let mapContainer = document.getElementById('map');
-    let map = new kakao.maps.Map(mapContainer, {
-      center: new kakao.maps.LatLng(35.8714, 128.6014),
-      level: 6
-    });
-    let clusterer = new kakao.maps.MarkerClusterer({
-      map: map,
-      averageCenter: true,
-      minLevel: 6
-    });
-
-    let allData = [];
-    let allMarkers = [];
-    let infowindow = null;
-
-    fetch("store_data.json")
-      .then(res => res.json())
-      .then(data => {
-        allData = data;
-        renderFilters(data);
-        renderMap(data);
+    kakao.maps.load(() => {
+      let mapContainer = document.getElementById('map');
+      let map = new kakao.maps.Map(mapContainer, {
+        center: new kakao.maps.LatLng(35.8714, 128.6014),
+        level: 6
       });
 
-    function renderFilters(data) {
-      const yearSet = new Set();
-      const typeSet = new Set();
-      data.forEach(d => {
-        if (d['인허가일자']) yearSet.add(d['인허가일자'].substring(0, 4));
-        if (d['구분']) typeSet.add(d['구분']);
+      let clusterer = new kakao.maps.MarkerClusterer({
+        map: map,
+        averageCenter: true,
+        minLevel: 6
       });
 
-      const yearFilter = document.getElementById("yearFilter");
-      [...yearSet].sort().forEach(y => {
-        const o = document.createElement("option");
-        o.value = y;
-        o.text = y;
-        yearFilter.appendChild(o);
-      });
+      let allData = [];
+      let allMarkers = [];
+      let infowindow = null;
 
-      const typeFilter = document.getElementById("typeFilter");
-      [...typeSet].sort().forEach(t => {
-        const o = document.createElement("option");
-        o.value = t;
-        o.text = t;
-        typeFilter.appendChild(o);
-      });
-
-      document.getElementById("search").addEventListener("input", applyFilters);
-      yearFilter.addEventListener("change", applyFilters);
-      typeFilter.addEventListener("change", applyFilters);
-    }
-
-    function applyFilters() {
-      const keyword = document.getElementById("search").value.trim();
-      const year = document.getElementById("yearFilter").value;
-      const type = document.getElementById("typeFilter").value;
-
-      const filtered = allData.filter(d => {
-        const matchName = !keyword || d['사업장명'].includes(keyword);
-        const matchYear = year === "all" || d['인허가일자']?.startsWith(year);
-        const matchType = type === "all" || d['구분'] === type;
-        return matchName && matchYear && matchType;
-      });
-
-      renderMap(filtered);
-    }
-
-    function renderMap(data) {
-      clusterer.clear();
-      allMarkers.forEach(m => m.setMap(null));
-      allMarkers = [];
-
-      const storeList = document.getElementById("storeList");
-      storeList.innerHTML = "";
-
-      data.forEach(store => {
-        const marker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(store.lat, store.lon)
+      fetch("store_data.json")
+        .then(res => res.json())
+        .then(data => {
+          allData = data;
+          renderFilters(data);
+          renderMap(data);
         });
 
-        const savedMemo = localStorage.getItem(store.lat + "," + store.lon) || "";
+      function renderFilters(data) {
+        const yearSet = new Set();
+        const typeSet = new Set();
+        data.forEach(d => {
+          if (d['인허가일자']) yearSet.add(d['인허가일자'].substring(0, 4));
+          if (d['구분']) typeSet.add(d['구분']);
+        });
 
-        const content = document.createElement("div");
-        content.className = "popup";
-        content.innerHTML = `
-          <div><strong>${store['사업장명']}</strong><br>${store['인허가일자']}</div>
-          <textarea>${savedMemo}</textarea><br>
-          <button onclick="saveMemo('${store.lat}', '${store.lon}', this)">💾 저장</button>
-          <button onclick="deleteMemo('${store.lat}', '${store.lon}', this)">❌ 삭제</button>
-        `;
+        const yearFilter = document.getElementById("yearFilter");
+        [...yearSet].sort().forEach(y => {
+          const o = document.createElement("option");
+          o.value = y;
+          o.text = y;
+          yearFilter.appendChild(o);
+        });
 
-        kakao.maps.event.addListener(marker, 'click', function() {
+        const typeFilter = document.getElementById("typeFilter");
+        [...typeSet].sort().forEach(t => {
+          const o = document.createElement("option");
+          o.value = t;
+          o.text = t;
+          typeFilter.appendChild(o);
+        });
+
+        document.getElementById("search").addEventListener("input", applyFilters);
+        yearFilter.addEventListener("change", applyFilters);
+        typeFilter.addEventListener("change", applyFilters);
+      }
+
+      function applyFilters() {
+        const keyword = document.getElementById("search").value.trim();
+        const year = document.getElementById("yearFilter").value;
+        const type = document.getElementById("typeFilter").value;
+
+        const filtered = allData.filter(d => {
+          const matchName = !keyword || d['사업장명'].includes(keyword);
+          const matchYear = year === "all" || d['인허가일자']?.startsWith(year);
+          const matchType = type === "all" || d['구분'] === type;
+          return matchName && matchYear && matchType;
+        });
+
+        renderMap(filtered);
+      }
+
+      function renderMap(data) {
+        clusterer.clear();
+        allMarkers.forEach(m => m.setMap(null));
+        allMarkers = [];
+
+        const storeList = document.getElementById("storeList");
+        storeList.innerHTML = "";
+
+        data.forEach(store => {
+          const marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(store.lat, store.lon)
+          });
+
+          const savedMemo = localStorage.getItem(store.lat + "," + store.lon) || "";
+
+          const content = document.createElement("div");
+          content.className = "popup";
+          content.innerHTML = `
+            <div><strong>${store['사업장명']}</strong><br>${store['인허가일자']}</div>
+            <textarea>${savedMemo}</textarea><br>
+            <button onclick="saveMemo('${store.lat}', '${store.lon}', this)">💾 저장</button>
+            <button onclick="deleteMemo('${store.lat}', '${store.lon}', this)">❌ 삭제</button>
+          `;
+
+          kakao.maps.event.addListener(marker, 'click', function() {
+            if (infowindow) infowindow.close();
+            infowindow = new kakao.maps.InfoWindow({ content });
+            infowindow.open(map, marker);
+          });
+
+          allMarkers.push(marker);
+
+          const item = document.createElement("div");
+          item.className = "store-item";
+          item.textContent = `${store['사업장명']} (${store['인허가일자']})`;
+          item.onclick = () => map.panTo(marker.getPosition());
+          storeList.appendChild(item);
+        });
+
+        clusterer.addMarkers(allMarkers);
+
+        kakao.maps.event.addListener(map, 'click', function() {
           if (infowindow) infowindow.close();
-          infowindow = new kakao.maps.InfoWindow({ content });
-          infowindow.open(map, marker);
         });
+      }
 
-        allMarkers.push(marker);
+      window.saveMemo = function(lat, lon, el) {
+        const memo = el.parentElement.querySelector("textarea").value;
+        localStorage.setItem(lat + "," + lon, memo);
+        alert("저장되었습니다.");
+      }
 
-        const item = document.createElement("div");
-        item.className = "store-item";
-        item.textContent = `${store['사업장명']} (${store['인허가일자']})`;
-        item.onclick = () => map.panTo(marker.getPosition());
-        storeList.appendChild(item);
-      });
-
-      clusterer.addMarkers(allMarkers);
-
-      // 지도 클릭 시 팝업 닫기
-      kakao.maps.event.addListener(map, 'click', function() {
-        if (infowindow) infowindow.close();
-      });
-    }
-
-    function saveMemo(lat, lon, el) {
-      const memo = el.parentElement.querySelector("textarea").value;
-      localStorage.setItem(lat + "," + lon, memo);
-      alert("저장되었습니다.");
-    }
-
-    function deleteMemo(lat, lon, el) {
-      localStorage.removeItem(lat + "," + lon);
-      el.parentElement.querySelector("textarea").value = "";
-      alert("삭제되었습니다.");
-    }
+      window.deleteMemo = function(lat, lon, el) {
+        localStorage.removeItem(lat + "," + lon);
+        el.parentElement.querySelector("textarea").value = "";
+        alert("삭제되었습니다.");
+      }
+    });
   </script>
 </body>
 </html>
