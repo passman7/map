@@ -74,7 +74,7 @@
     <input type="text" id="search" placeholder="사업장명 검색">
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
-    <button onclick="filterNearby()">📍 내 위치 주방 보기</button>
+    <button onclick="showMyLocation()">📍 내 위치 보기</button>
     <div id="storeList"></div>
   </div>
   <div id="map"></div>
@@ -96,7 +96,7 @@
       let allData = [];
       let allMarkers = [];
       let infowindow = null;
-      let myPosition = null; // 현재 위치 저장
+      let myMarker = null;
 
       fetch("store_data.json")
         .then(res => res.json())
@@ -143,8 +143,7 @@
           const matchName = !keyword || d['사업장명']?.includes(keyword);
           const matchYear = year === "all" || d['인허가일자']?.startsWith(year);
           const matchType = type === "all" || d['구분'] === type;
-          const matchNearby = !myPosition || getDistance(myPosition.lat, myPosition.lon, d.lat, d.lon) <= 2;
-          return matchName && matchYear && matchType && matchNearby;
+          return matchName && matchYear && matchType;
         });
 
         renderMap(filtered);
@@ -215,31 +214,34 @@
         alert("삭제되었습니다.");
       }
 
-      window.filterNearby = function () {
+      window.showMyLocation = function () {
         if (!navigator.geolocation) {
           alert("현재 위치를 지원하지 않는 브라우저입니다.");
           return;
         }
 
         navigator.geolocation.getCurrentPosition(pos => {
-          myPosition = {
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude
-          };
-          map.setCenter(new kakao.maps.LatLng(myPosition.lat, myPosition.lon));
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const loc = new kakao.maps.LatLng(lat, lon);
+
+          map.setCenter(loc);
           map.setLevel(5);
-          applyFilters();
+
+          if (myMarker) myMarker.setMap(null);
+          myMarker = new kakao.maps.Marker({
+            position: loc,
+            map: map,
+            title: "내 위치",
+            image: new kakao.maps.MarkerImage(
+              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png",
+              new kakao.maps.Size(64, 69),
+              { offset: new kakao.maps.Point(27, 69) }
+            )
+          });
         }, err => {
           alert("위치 정보를 가져올 수 없습니다.");
         });
-      }
-
-      function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       }
     });
   </script>
