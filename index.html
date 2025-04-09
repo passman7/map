@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>대구 소매점 지도 (카카오)</title>
+  <title> 3지역 지도 (카카오)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * { box-sizing: border-box; font-family: sans-serif; }
@@ -46,25 +46,24 @@
       margin-top: 5px;
       margin-right: 5px;
     }
-    select, input[type="text"] {
+    select, input[type="text"], button {
       width: 100%;
       padding: 6px;
       margin: 4px 0;
     }
 
-    /* ✅ 모바일 최적화 */
     @media (max-width: 768px) {
       body {
         flex-direction: column;
       }
       #sidebar {
         width: 100%;
-        height: 230px;
+        height: 250px;
         border-right: none;
         border-bottom: 1px solid #ddd;
       }
       #map {
-        height: calc(100vh - 230px);
+        height: calc(100vh - 250px);
       }
     }
   </style>
@@ -75,6 +74,7 @@
     <input type="text" id="search" placeholder="사업장명 검색">
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
+    <button onclick="filterNearby()">📍 내 위치 주방 보기</button>
     <div id="storeList"></div>
   </div>
   <div id="map"></div>
@@ -102,15 +102,14 @@
         .then(data => {
           allData = data;
           renderFilters(data);
-          // renderMap(data); ← 검색 시에만 마커 렌더링
         });
 
       function renderFilters(data) {
         const yearSet = new Set();
         const typeSet = new Set();
         data.forEach(d => {
-          if (d['인허가일자']) yearSet.add(d['인허가일자'].substring(0, 4));
-          if (d['구분']) typeSet.add(d['구분']);
+          if (d['인헌가일자']) yearSet.add(d['인헌가일자'].substring(0, 4));
+          if (d['구별']) typeSet.add(d['구별']);
         });
 
         const yearFilter = document.getElementById("yearFilter");
@@ -141,8 +140,8 @@
 
         const filtered = allData.filter(d => {
           const matchName = !keyword || d['사업장명'].includes(keyword);
-          const matchYear = year === "all" || d['인허가일자']?.startsWith(year);
-          const matchType = type === "all" || d['구분'] === type;
+          const matchYear = year === "all" || d['인헌가일자']?.startsWith(year);
+          const matchType = type === "all" || d['구별'] === type;
           return matchName && matchYear && matchType;
         });
 
@@ -174,9 +173,9 @@
           const content = document.createElement("div");
           content.className = "popup";
           content.innerHTML = `
-            <div><strong>${store['사업장명']}</strong><br>${store['인허가일자']}</div>
+            <div><strong>${store['사업장명']}</strong><br>${store['인헌가일자']}</div>
             <textarea>${savedMemo}</textarea><br>
-            <button onclick="saveMemo('${store.lat}', '${store.lon}', this)">💾 저장</button>
+            <button onclick="saveMemo('${store.lat}', '${store.lon}', this)">📂 저장</button>
             <button onclick="deleteMemo('${store.lat}', '${store.lon}', this)">❌ 삭제</button>
           `;
 
@@ -190,7 +189,7 @@
 
           const item = document.createElement("div");
           item.className = "store-item";
-          item.textContent = `${store['사업장명']} (${store['인허가일자']})`;
+          item.textContent = `${store['사업장명']} (${store['인헌가일자']})`;
           item.onclick = () => map.panTo(marker.getPosition());
           storeList.appendChild(item);
         });
@@ -212,6 +211,38 @@
         localStorage.removeItem(lat + "," + lon);
         el.parentElement.querySelector("textarea").value = "";
         alert("삭제되었습니다.");
+      }
+
+      window.filterNearby = function() {
+        if (!navigator.geolocation) {
+          alert("현재 위치를 제공할 수 없는 브라우저입니다.");
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(pos => {
+          const myLat = pos.coords.latitude;
+          const myLon = pos.coords.longitude;
+          const radius = 2; // km
+
+          const filtered = allData.filter(store => {
+            if (!store.lat || !store.lon) return false;
+            const d = getDistance(myLat, myLon, store.lat, store.lon);
+            return d <= radius;
+          });
+
+          renderMap(filtered);
+          map.setCenter(new kakao.maps.LatLng(myLat, myLon));
+          map.setLevel(5);
+        }, err => {
+          alert("위치 정보를 가져오지 못했습니다.");
+        });
+      }
+
+      function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       }
     });
   </script>
