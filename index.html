@@ -1,280 +1,258 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>대구 담배소매점 지도 (GS25 스타일)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=SUIT&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>GS25 통합형 지도</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
-      box-sizing: border-box;
+    * { box-sizing: border-box; font-family: 'SUIT', sans-serif; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+    #controls {
+      position: absolute; top: 10px; left: 10px; /* 좌측으로 이동 */
+      z-index: 100; display: flex; flex-direction: column; gap: 6px;
+      background: white; padding: 10px; border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    #controls input, #controls select {
+      padding: 6px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc;
+    }
+    #exportBtn {
+      position: absolute; bottom: 20px; right: 20px;
+      z-index: 100; background: #0078FF; color: white;
+      padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer;
+    }
+    .popup, .input-form {
+      font-size: 14px;
+      line-height: 1.6;
+      width: 240px;
+      padding: 10px;
       font-family: 'SUIT', sans-serif;
     }
-    body {
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      flex-direction: row;
-      background: #f8fafc;
-      color: #333;
-    }
-    #sidebar {
-      width: 300px;
-      background: #f1f5f9;
-      padding: 10px;
-      overflow-y: auto;
-      border-right: 1px solid #e2e8f0;
-    }
-    #map {
-      flex: 1;
-      height: 100%;
-    }
-    .store-item {
-      background: #ffffff;
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    .store-item:hover {
-      background: #edf6ff;
-      cursor: pointer;
-    }
-    .popup {
-      padding: 8px;
-      width: 200px;
+    .popup textarea, .input-form input {
+      width: 100%;
+      padding: 6px;
+      font-size: 13px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
     .popup textarea {
-      width: 100%;
-      height: 60px;
+      height: 70px;
+      resize: none;
     }
-    .popup button {
-      margin-top: 5px;
-      margin-right: 5px;
-      background-color: #0078FF;
-      color: white;
+    .popup button, .input-form button {
+      margin-top: 8px;
+      margin-right: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
       border: none;
-      padding: 5px 10px;
       border-radius: 4px;
+      background: #0078FF;
+      color: white;
       cursor: pointer;
     }
-    .popup button:hover {
-      opacity: 0.9;
-    }
-    select, input[type="text"], button {
-      width: 100%;
-      padding: 8px;
-      margin: 6px 0;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 15px;
-    }
-    button {
-      background-color: #00C389;
-      color: white;
-      font-weight: bold;
-    }
-    button:hover {
-      background-color: #00aa76;
-    }
-
-    @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-      }
-      #sidebar {
-        width: 100%;
-        height: 260px;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-      }
-      #map {
-        height: calc(100vh - 260px);
-      }
+    .popup button:last-child, .input-form button:last-child {
+      background: #ccc;
+      color: #333;
     }
   </style>
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&autoload=false&libraries=clusterer"></script>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=services,clusterer"></script>
 </head>
 <body>
-  <div id="sidebar">
-    <input type="text" id="search" placeholder="사업장명 검색">
+  <div id="controls">
+    <input type="text" id="search" placeholder="사업장명 검색" />
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
-    <button onclick="showMyLocation()">📍 내 위치 보기</button>
-    <div id="storeList"></div>
+    <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
   </div>
+  <button id="exportBtn">📤 엑셀로 내보내기</button>
   <div id="map"></div>
 
   <script>
-    kakao.maps.load(() => {
-      const mapContainer = document.getElementById('map');
-      const map = new kakao.maps.Map(mapContainer, {
+    let map, clusterer, geocoder;
+    let allData = [], userData = [], markers = [], infowindow = null;
+    let initialLoaded = false;
+
+    window.onload = () => {
+      map = new kakao.maps.Map(document.getElementById("map"), {
         center: new kakao.maps.LatLng(35.8714, 128.6014),
         level: 6
       });
-
-      const clusterer = new kakao.maps.MarkerClusterer({
-        map: map,
-        averageCenter: true,
-        minLevel: 6
+      geocoder = new kakao.maps.services.Geocoder();
+      clusterer = new kakao.maps.MarkerClusterer({
+        map: map, averageCenter: true, minLevel: 6
       });
 
-      let allData = [];
-      let allMarkers = [];
-      let infowindow = null;
-      let myMarker = null;
+      map.addListener("rightclick", e => showInputForm(e.latLng));
+      document.getElementById("addrSearch").addEventListener("keypress", e => {
+        if (e.key === "Enter") searchAddress();
+      });
+      document.getElementById("search").addEventListener("input", render);
+      document.getElementById("yearFilter").addEventListener("change", render);
+      document.getElementById("typeFilter").addEventListener("change", render);
+      document.getElementById("exportBtn").addEventListener("click", exportCSV);
 
       fetch("store_data.json")
         .then(res => res.json())
         .then(data => {
           allData = data;
-          renderFilters(data);
+          populateFilters();
         });
+    };
 
-      function renderFilters(data) {
-        const yearSet = new Set();
-        const typeSet = new Set();
-        data.forEach(d => {
-          if (d['인허가일자']) yearSet.add(d['인허가일자'].substring(0, 4));
-          if (d['구분']) typeSet.add(d['구분']);
+    function populateFilters() {
+      const years = new Set(), types = new Set();
+      allData.forEach(d => {
+        if (d['인허가일자']) years.add(d['인허가일자'].substring(0, 4));
+        if (d['구분']) types.add(d['구분']);
+      });
+      const yearSel = document.getElementById("yearFilter");
+      [...years].sort().forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y; opt.text = y;
+        yearSel.appendChild(opt);
+      });
+      const typeSel = document.getElementById("typeFilter");
+      [...types].sort().forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t; opt.text = t;
+        typeSel.appendChild(opt);
+      });
+    }
+
+    function render() {
+      clusterer.clear();
+      markers.forEach(m => m.setMap(null));
+      markers = [];
+
+      const keyword = document.getElementById("search").value.trim();
+      const year = document.getElementById("yearFilter").value;
+      const type = document.getElementById("typeFilter").value;
+
+      const filtered = [...allData, ...userData].filter(d => {
+        const matchName = !keyword || (d['사업장명'] ?? d['점포명'])?.includes(keyword);
+        const date = d['인허가일자'] ?? d['수정일'];
+        const matchYear = year === "all" || date?.startsWith(year);
+        const matchType = type === "all" || d['구분'] === type;
+        return matchName && matchYear && matchType;
+      });
+
+      filtered.forEach(store => {
+        const lat = parseFloat(store.lat), lon = parseFloat(store.lon);
+        const isUser = !!store['점포명'];
+        const marker = new kakao.maps.Marker({
+          position: new kakao.maps.LatLng(lat, lon),
+          image: isUser ? new kakao.maps.MarkerImage('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', new kakao.maps.Size(24, 35)) : null
         });
+        marker.setMap(map);
+        markers.push(marker);
 
-        const yearFilter = document.getElementById("yearFilter");
-        [...yearSet].sort().forEach(y => {
-          const o = document.createElement("option");
-          o.value = y;
-          o.text = y;
-          yearFilter.appendChild(o);
-        });
+        const memoKey = lat + "," + lon;
+        const memo = localStorage.getItem(memoKey) || "";
+        const now = new Date().toLocaleString();
 
-        const typeFilter = document.getElementById("typeFilter");
-        [...typeSet].sort().forEach(t => {
-          const o = document.createElement("option");
-          o.value = t;
-          o.text = t;
-          typeFilter.appendChild(o);
-        });
-
-        document.getElementById("search").addEventListener("input", applyFilters);
-        yearFilter.addEventListener("change", applyFilters);
-        typeFilter.addEventListener("change", applyFilters);
-      }
-
-      function applyFilters() {
-        const keyword = document.getElementById("search").value.trim();
-        const year = document.getElementById("yearFilter").value;
-        const type = document.getElementById("typeFilter").value;
-
-        const filtered = allData.filter(d => {
-          const matchName = !keyword || d['사업장명']?.includes(keyword);
-          const matchYear = year === "all" || d['인허가일자']?.startsWith(year);
-          const matchType = type === "all" || d['구분'] === type;
-          return matchName && matchYear && matchType;
-        });
-
-        renderMap(filtered);
-      }
-
-      function renderMap(data) {
-        clusterer.clear();
-        allMarkers.forEach(m => m.setMap(null));
-        allMarkers = [];
-
-        const storeList = document.getElementById("storeList");
-        storeList.innerHTML = "";
-
-        if (data.length === 0) {
-          storeList.innerHTML = "<div style='padding:5px; color:gray;'>🔍 조건에 맞는 업소가 없습니다.</div>";
-          return;
-        }
-
-        storeList.insertAdjacentHTML("afterbegin", `<div style="padding:5px; color:#333;">🔎 총 ${data.length}개 업소</div>`);
-
-        data.forEach(store => {
-          const marker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(store.lat, store.lon),
-            image: new kakao.maps.MarkerImage(
-              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-              new kakao.maps.Size(24, 35)
-            )
-          });
-
-          const savedMemo = localStorage.getItem(store.lat + "," + store.lon) || "";
-
-          const content = document.createElement("div");
-          content.className = "popup";
-          content.innerHTML = `
-            <div><strong>${store['사업장명']}</strong><br>${store['인허가일자']}</div>
-            <textarea>${savedMemo}</textarea><br>
-            <button onclick="saveMemo('${store.lat}', '${store.lon}', this)">💾 저장</button>
-            <button onclick="deleteMemo('${store.lat}', '${store.lon}', this)">❌ 삭제</button>
-          `;
-
-          kakao.maps.event.addListener(marker, 'click', function() {
-            if (infowindow) infowindow.close();
-            infowindow = new kakao.maps.InfoWindow({ content });
-            infowindow.open(map, marker);
-          });
-
-          allMarkers.push(marker);
-
-          const item = document.createElement("div");
-          item.className = "store-item";
-          item.textContent = `${store['사업장명']} (${store['인허가일자']})`;
-          item.onclick = () => map.panTo(marker.getPosition());
-          storeList.appendChild(item);
-        });
-
-        clusterer.addMarkers(allMarkers);
-
-        kakao.maps.event.addListener(map, 'click', function() {
+        const popup = document.createElement("div");
+        popup.className = "popup";
+        popup.innerHTML = `
+          <div><strong>${store['사업장명'] ?? store['점포명']}</strong></div>
+          <div>${store['인허가일자'] ?? store['수정일']}</div>
+          <textarea>${memo}</textarea><br>
+          <small>🕒 ${now}</small><br>
+          <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
+          <button onclick="deleteMemo('${memoKey}', this)">❌ 삭제</button>
+        `;
+        kakao.maps.event.addListener(marker, 'click', function() {
           if (infowindow) infowindow.close();
+          infowindow = new kakao.maps.InfoWindow({ content: popup });
+          infowindow.open(map, marker);
         });
-      }
+      });
 
-      window.saveMemo = function(lat, lon, el) {
-        const memo = el.parentElement.querySelector("textarea").value;
-        localStorage.setItem(lat + "," + lon, memo);
-        alert("저장되었습니다.");
-      }
+      clusterer.addMarkers(markers);
+    }
 
-      window.deleteMemo = function(lat, lon, el) {
-        localStorage.removeItem(lat + "," + lon);
-        el.parentElement.querySelector("textarea").value = "";
-        alert("삭제되었습니다.");
-      }
+    function saveMemo(key, el) {
+      const val = el.parentElement.querySelector("textarea").value;
+      localStorage.setItem(key, val);
+      alert("저장되었습니다.");
+      if (infowindow) infowindow.close();
+    }
 
-      window.showMyLocation = function () {
-        if (!navigator.geolocation) {
-          alert("현재 위치를 지원하지 않는 브라우저입니다.");
-          return;
-        }
+    function deleteMemo(key, el) {
+      localStorage.removeItem(key);
+      el.parentElement.querySelector("textarea").value = "";
+      alert("삭제되었습니다.");
+    }
 
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const loc = new kakao.maps.LatLng(lat, lon);
+    function showInputForm(latlng) {
+      const now = new Date().toISOString().split("T")[0];
+      const div = document.createElement("div");
+      div.className = "input-form";
+      div.innerHTML = `
+        <strong>물건 정보 입력</strong><br>
+        담당자: <input id="mgr"><br>
+        점포명: <input id="name"><br>
+        면적: <input id="size"><br>
+        보증금: <input id="deposit"><br>
+        권리금: <input id="premium"><br>
+        임차료: <input id="rent"><br>
+        수정일: <input id="date" value="${now}"><br>
+        <button onclick="addUserData(${latlng.getLat()}, ${latlng.getLng()}, this)">저장</button>
+        <button onclick="if (infowindow) infowindow.close()">취소</button>
+      `;
+      const iw = new kakao.maps.InfoWindow({
+        position: latlng, content: div
+      });
+      iw.open(map);
+      infowindow = iw;
+    }
 
+    function addUserData(lat, lon, el) {
+      const p = el.parentElement;
+      const d = {
+        lat, lon,
+        담당자: p.querySelector("#mgr").value,
+        점포명: p.querySelector("#name").value,
+        면적: p.querySelector("#size").value,
+        보증금: p.querySelector("#deposit").value,
+        권리금: p.querySelector("#premium").value,
+        임차료: p.querySelector("#rent").value,
+        수정일: p.querySelector("#date").value
+      };
+      userData.push(d);
+      render();
+      if (infowindow) infowindow.close();
+    }
+
+    function exportCSV() {
+      const rows = [["담당자","점포명","면적","보증금","권리금","임차료","수정일","위도","경도"]];
+      userData.forEach(d => {
+        rows.push([
+          d.담당자, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon
+        ]);
+      });
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      const blob = new Blob([bom, rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n")], {
+        type: "text/csv;charset=utf-8;"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "물건정보.csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function searchAddress() {
+      const keyword = document.getElementById("addrSearch").value;
+      geocoder.addressSearch(keyword, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
           map.setCenter(loc);
-          map.setLevel(5);
-
-          if (myMarker) myMarker.setMap(null);
-          myMarker = new kakao.maps.Marker({
-            position: loc,
-            map: map,
-            title: "내 위치",
-            image: new kakao.maps.MarkerImage(
-              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png",
-              new kakao.maps.Size(64, 69),
-              { offset: new kakao.maps.Point(27, 69) }
-            )
-          });
-        }, err => {
-          alert("위치 정보를 가져올 수 없습니다.");
-        });
-      }
-    });
+        } else {
+          alert("주소를 찾을 수 없습니다.");
+        }
+      });
+    }
   </script>
 </body>
 </html>
