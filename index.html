@@ -2,24 +2,30 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>pass mapker</title>
+  <title>GS25 통합형 지도</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; font-family: 'SUIT', sans-serif; }
-    html, body { margin: 0; padding: 0; height: 100%; }
-    #map { width: 100%; height: 100%; }
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    #toggleControlsBtn {
+      position: absolute; top: 10px; left: 10px; z-index: 120;
+      background: #0078FF; color: white;
+      border: none; padding: 6px 12px; border-radius: 6px;
+      cursor: pointer; font-size: 14px;
+    }
     #controls {
-      position: absolute; top: 10px; left: 10px;
-      z-index: 100; display: flex; flex-direction: column; gap: 6px;
+      position: absolute; top: 60px; left: 10px;
+      z-index: 110; display: flex; flex-direction: column; gap: 6px;
       background: white; padding: 10px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    #controls input, #controls select {
+    #controls input, #controls select, #locateBtn {
       padding: 6px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc;
     }
     #exportBtn {
       position: absolute; bottom: 20px; right: 20px;
-      z-index: 100; background: #0078FF; color: white;
+      z-index: 110; background: #0078FF; color: white;
       padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer;
     }
     .popup, .input-form {
@@ -30,89 +36,51 @@
       font-family: 'SUIT', sans-serif;
     }
     .popup textarea, .input-form input {
-      width: 100%;
-      padding: 6px;
-      font-size: 13px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      width: 100%; padding: 6px; font-size: 13px;
+      margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;
     }
-    .popup textarea {
-      height: 70px;
-      resize: none;
-    }
+    .popup textarea { height: 70px; resize: none; }
     .popup button, .input-form button {
-      margin-top: 8px;
-      margin-right: 6px;
-      padding: 6px 10px;
-      font-size: 13px;
-      border: none;
-      border-radius: 4px;
-      background: #0078FF;
-      color: white;
-      cursor: pointer;
+      margin-top: 8px; margin-right: 6px; padding: 6px 10px; font-size: 13px;
+      border: none; border-radius: 4px;
+      background: #0078FF; color: white; cursor: pointer;
     }
     .popup button:last-child, .input-form button:last-child {
-      background: #ccc;
-      color: #333;
+      background: #ccc; color: #333;
     }
     .popup .close-btn {
-      float: right;
-      font-size: 13px;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      color: #999;
-      margin-top: -4px;
-      margin-right: -4px;
+      float: right; font-size: 13px; cursor: pointer;
+      background: transparent; border: none; color: #999;
+      margin-top: -4px; margin-right: -4px;
     }
-    .popup a {
-      color: #0078FF;
-      text-decoration: underline;
-      font-size: 13px;
+    @media screen and (max-width: 768px) {
+      #controls { width: 90%; left: 50%; transform: translateX(-50%); top: 60px; }
     }
   </style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=services,clusterer"></script>
 </head>
 <body>
+  <div id="map"></div>
+  <button id="toggleControlsBtn">🔍 검색 열기/닫기</button>
   <div id="controls">
     <input type="text" id="search" placeholder="사업장명 검색" />
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
+    <button id="locateBtn">📍 내 위치로 이동</button>
   </div>
   <button id="exportBtn">📤 엑셀로 내보내기</button>
-  <div id="map"></div>
 
   <script>
     let map, clusterer, geocoder;
-    let allData = [], userData = [], markers = [], infowindow = null;
-
-    const markerIcons = {
-      violet: 'https://mapmarker.io/api/v1/pin?size=50&background=%238e44ad&icon=fa-store&color=fff',
-      blue: 'https://mapmarker.io/api/v1/pin?size=50&background=%233498db&icon=fa-store&color=fff',
-      yellow: 'https://mapmarker.io/api/v1/pin?size=50&background=%23f1c40f&icon=fa-store&color=fff',
-      red: 'https://mapmarker.io/api/v1/pin?size=50&background=%23e74c3c&icon=fa-store&color=fff',
-      green: 'https://mapmarker.io/api/v1/pin?size=50&background=%2327ae60&icon=fa-store&color=fff',
-      star: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png'
-    };
+    let allData = [], userData = [], markers = [], infowindow = null, searchMarker = null, currentMarker = null;
 
     window.onload = () => {
       map = new kakao.maps.Map(document.getElementById("map"), {
-        center: new kakao.maps.LatLng(35.8714, 128.6014),
-        level: 6
+        center: new kakao.maps.LatLng(35.8714, 128.6014), level: 6
       });
       geocoder = new kakao.maps.services.Geocoder();
       clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 6 });
-
-      map.addListener("rightclick", e => showInputForm(e.latLng));
-      document.getElementById("addrSearch").addEventListener("keypress", e => {
-        if (e.key === "Enter") searchAddress();
-      });
-      document.getElementById("search").addEventListener("input", render);
-      document.getElementById("yearFilter").addEventListener("change", render);
-      document.getElementById("typeFilter").addEventListener("change", render);
-      document.getElementById("exportBtn").addEventListener("click", exportCSV);
 
       fetch("store_data.json")
         .then(res => res.json())
@@ -122,16 +90,21 @@
           document.getElementById("yearFilter").value = "2025";
           render();
         });
-    };
 
-    function getMarkerImage(name, isUser) {
-      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(30, 45));
-      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(30, 45));
-      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(30, 45));
-      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(30, 45));
-      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(30, 45));
-      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(30, 45));
-    }
+      map.addListener("rightclick", e => showInputForm(e.latLng));
+      document.getElementById("search").addEventListener("input", render);
+      document.getElementById("yearFilter").addEventListener("change", render);
+      document.getElementById("typeFilter").addEventListener("change", render);
+      document.getElementById("addrSearch").addEventListener("keypress", e => {
+        if (e.key === "Enter") searchAddress();
+      });
+      document.getElementById("locateBtn").addEventListener("click", goToCurrentLocation);
+      document.getElementById("toggleControlsBtn").addEventListener("click", () => {
+        const ctrl = document.getElementById("controls");
+        ctrl.style.display = ctrl.style.display === "none" ? "flex" : "none";
+      });
+      document.getElementById("exportBtn").addEventListener("click", exportCSV);
+    };
 
     function populateFilters() {
       const years = new Set(), types = new Set();
@@ -151,6 +124,19 @@
         opt.value = t; opt.text = t;
         typeSel.appendChild(opt);
       });
+      const opt = document.createElement("option");
+      opt.value = "추진물건"; opt.text = "추진물건";
+      typeSel.appendChild(opt);
+    }
+
+    function getMarkerColor(name) {
+      if (!name) return "green";
+      name = name.toLowerCase();
+      if (name.includes("cu")) return "violet";
+      if (name.includes("지에스") || name.includes("gs")) return "blue";
+      if (name.includes("이마트24")) return "yellow";
+      if (name.includes("세븐")) return "red";
+      return "green";
     }
 
     function render() {
@@ -163,8 +149,9 @@
       const type = document.getElementById("typeFilter").value;
 
       const filtered = [...allData, ...userData].filter(d => {
-        const matchName = !keyword || (d['사업장명'] ?? d['점포명'])?.includes(keyword);
-        const date = d['인허가일자'] ?? d['수정일'];
+        const name = d['사업장명'] || d['점포명'] || "";
+        const matchName = !keyword || name.includes(keyword);
+        const date = d['인허가일자'] || d['수정일'];
         const matchYear = year === "all" || date?.startsWith(year);
         const matchType = type === "all" || d['구분'] === type;
         return matchName && matchYear && matchType;
@@ -172,19 +159,22 @@
 
       filtered.forEach(store => {
         const lat = parseFloat(store.lat), lon = parseFloat(store.lon);
-        const name = store['사업장명'] ?? store['점포명'] ?? '';
+        const name = store['사업장명'] || store['점포명'] || "";
         const isUser = !!store['점포명'];
+        const color = isUser ? "black" : getMarkerColor(name);
+
         const marker = new kakao.maps.Marker({
+          map: map,
           position: new kakao.maps.LatLng(lat, lon),
-          image: getMarkerImage(name, isUser)
+          image: new kakao.maps.MarkerImage(`https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_${color}.png`, new kakao.maps.Size(24, 35))
         });
-        marker.setMap(map);
         markers.push(marker);
 
+        const memoKey = lat + "," + lon;
+        const memo = localStorage.getItem(memoKey) || "";
         const popup = document.createElement("div");
         popup.className = "popup";
         popup.innerHTML = `<button class='close-btn' onclick='infowindow.close()'>✖</button>`;
-
         if (isUser) {
           popup.innerHTML += `
             <div><strong>${store['점포명']}</strong></div>
@@ -194,26 +184,16 @@
             <div>권리금: ${store['권리금']}</div>
             <div>임차료: ${store['임차료']}</div>
             <div>수정일: ${store['수정일']}</div>
-            <div>📍 위도: ${lat.toFixed(6)}, 경도: ${lon.toFixed(6)}</div>
-            <a href='https://map.kakao.com/link/map/${store['점포명']},${lat},${lon}' target='_blank'>카카오맵에서 보기</a>
           `;
         } else {
-          const memoKey = lat + "," + lon;
-          const memo = localStorage.getItem(memoKey) || "";
-          const now = new Date().toLocaleString();
           popup.innerHTML += `
-            <div><strong>${store['사업장명']}</strong></div>
-            <div>${store['인허가일자']}</div>
-            <div>📍 위도: ${lat.toFixed(6)}, 경도: ${lon.toFixed(6)}</div>
-            <a href='https://map.kakao.com/link/map/${store['사업장명']},${lat},${lon}' target='_blank'>카카오맵에서 보기</a>
+            <strong>${name}</strong><br>
             <textarea>${memo}</textarea><br>
-            <small>🕒 ${now}</small><br>
             <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
             <button onclick="deleteMemo('${memoKey}', this)">❌ 삭제</button>
           `;
         }
-
-        kakao.maps.event.addListener(marker, 'click', function() {
+        kakao.maps.event.addListener(marker, 'click', () => {
           if (infowindow) infowindow.close();
           infowindow = new kakao.maps.InfoWindow({ content: popup });
           infowindow.open(map, marker);
@@ -229,12 +209,10 @@
       alert("저장되었습니다.");
       if (infowindow) infowindow.close();
     }
-
     function deleteMemo(key, el) {
       localStorage.removeItem(key);
       el.parentElement.querySelector("textarea").value = "";
       alert("삭제되었습니다.");
-      if (infowindow) infowindow.close();
     }
 
     function showInputForm(latlng) {
@@ -268,11 +246,55 @@
         보증금: p.querySelector("#deposit").value,
         권리금: p.querySelector("#premium").value,
         임차료: p.querySelector("#rent").value,
-        수정일: p.querySelector("#date").value
+        수정일: p.querySelector("#date").value,
+        구분: "추진물건"
       };
       userData.push(d);
       render();
       if (infowindow) infowindow.close();
+    }
+
+    function searchAddress() {
+      const keyword = document.getElementById("addrSearch").value;
+      geocoder.addressSearch(keyword, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
+          map.setCenter(loc);
+          if (searchMarker) searchMarker.setMap(null);
+          searchMarker = new kakao.maps.Marker({
+            map: map,
+            position: loc,
+            image: new kakao.maps.MarkerImage(
+              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+              new kakao.maps.Size(24, 35)
+            )
+          });
+        } else {
+          alert("주소를 찾을 수 없습니다.");
+        }
+      });
+    }
+
+    function goToCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const loc = new kakao.maps.LatLng(lat, lon);
+          map.setCenter(loc);
+          if (currentMarker) currentMarker.setMap(null);
+          currentMarker = new kakao.maps.Marker({
+            position: loc,
+            map: map,
+            image: new kakao.maps.MarkerImage(
+              "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
+              new kakao.maps.Size(40, 42)
+            )
+          });
+        }, () => alert("위치 정보를 가져올 수 없습니다."));
+      } else {
+        alert("이 브라우저에서는 위치 정보 사용이 불가능합니다.");
+      }
     }
 
     function exportCSV() {
@@ -288,18 +310,6 @@
       const a = document.createElement("a");
       a.href = url; a.download = "물건정보.csv";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    function searchAddress() {
-      const keyword = document.getElementById("addrSearch").value;
-      geocoder.addressSearch(keyword, function(result, status) {
-        if (status === kakao.maps.services.Status.OK) {
-          const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
-          map.setCenter(loc);
-        } else {
-          alert("주소를 찾을 수 없습니다.");
-        }
-      });
     }
   </script>
 </body>
