@@ -129,15 +129,24 @@
       typeSel.appendChild(opt);
     }
 
-    function getMarkerImageURL(name) {
-  if (!name) return 'green';
+   function getMarkerImageURL(name) {
+  if (!name) return 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_green.png';
   name = name.toLowerCase();
-  if (name.includes("cu")) return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_purple.png";
-  if (name.includes("gs") || name.includes("지에스")) return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png";
-  if (name.includes("이마트24")) return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_orange.png";
-  if (name.includes("세븐")) return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png";
-  return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_green.png";
+
+  if (name.includes("cu")) 
+    return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_purple.png";
+  if (name.includes("gs") || name.includes("지에스")) 
+    return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png";
+  if (name.includes("이마트24")) 
+    return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_orange.png";
+  if (name.includes("세븐")) 
+    return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png";
+  if (name.includes("추진물건") || name.includes("점포명")) 
+    return "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_black.png";
+
+  return 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_green.png';
 }
+
 
     function render() {
       clusterer.clear();
