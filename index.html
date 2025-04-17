@@ -109,22 +109,57 @@
         });
     };
 
+    function goToCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+          map.setCenter(latlng);
+          if (currentMarker) currentMarker.setMap(null);
+          currentMarker = new kakao.maps.Marker({
+            map, position: latlng,
+            image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
+          });
+        }, () => alert("위치 정보를 가져올 수 없습니다."));
+      }
+    }
+
+    function searchAddress() {
+      const keyword = document.getElementById("addrSearch").value;
+      geocoder.addressSearch(keyword, (result, status) => {
+        if (status === kakao.maps.services.Status.OK) {
+          const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
+          map.setCenter(loc);
+          if (searchMarker) searchMarker.setMap(null);
+          searchMarker = new kakao.maps.Marker({
+            map, position: loc,
+            image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
+          });
+        } else alert("주소를 찾을 수 없습니다.");
+      });
+    }
+
+    function getMarkerImage(name, isUser) {
+      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(30, 45));
+      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(30, 45));
+      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(30, 45));
+      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(30, 45));
+      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(30, 45));
+      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(30, 45));
+    }
+
     function populateFilters() {
       const years = new Set(), types = new Set();
       allData.forEach(d => {
         if (d['인허가일자']) years.add(d['인허가일자'].substring(0, 4));
         if (d['구분']) types.add(d['구분']);
       });
-      userData.forEach(d => types.add("추진 물건"));
       const yearSel = document.getElementById("yearFilter");
-      yearSel.innerHTML = '<option value="all">전체 연도</option>';
       [...years].sort().forEach(y => {
         const opt = document.createElement("option");
         opt.value = y; opt.text = y;
         yearSel.appendChild(opt);
       });
       const typeSel = document.getElementById("typeFilter");
-      typeSel.innerHTML = '<option value="all">전체 구분</option>';
       [...types].sort().forEach(t => {
         const opt = document.createElement("option");
         opt.value = t; opt.text = t;
@@ -174,7 +209,6 @@
             <div>권리금: ${store['권리금']}</div>
             <div>임차료: ${store['임차료']}</div>
             <div>수정일: ${store['수정일']}</div>
-            <a href="https://map.kakao.com/link/map/${encodeURIComponent(store['점포명'])},${store.lat},${store.lon}" target="_blank">📍 카카오맵에서 보기</a>
           `;
         } else {
           const memoKey = lat + "," + lon;
@@ -185,7 +219,6 @@
             <div>${store['인허가일자']}</div>
             <textarea>${memo}</textarea><br>
             <small>🕒 ${now}</small><br>
-            <a href="https://map.kakao.com/link/map/${encodeURIComponent(store['사업장명'])},${store.lat},${store.lon}" target="_blank">📍 카카오맵에서 보기</a><br>
             <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
             <button onclick="deleteMemo('${memoKey}', this)">❌ 삭제</button>
           `;
@@ -201,13 +234,18 @@
       clusterer.addMarkers(markers);
     }
 
-    function getMarkerImage(name, isUser) {
-      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(30, 45));
-      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(30, 45));
-      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(30, 45));
-      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(30, 45));
-      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(30, 45));
-      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(30, 45));
+    function saveMemo(key, el) {
+      const val = el.parentElement.querySelector("textarea").value;
+      localStorage.setItem(key, val);
+      alert("저장되었습니다.");
+      if (infowindow) infowindow.close();
+    }
+
+    function deleteMemo(key, el) {
+      localStorage.removeItem(key);
+      el.parentElement.querySelector("textarea").value = "";
+      alert("삭제되었습니다.");
+      if (infowindow) infowindow.close();
     }
 
     function showInputForm(latlng) {
@@ -243,59 +281,27 @@
         보증금: p.querySelector("#deposit").value,
         권리금: p.querySelector("#premium").value,
         임차료: p.querySelector("#rent").value,
-        수정일: p.querySelector("#date").value,
-        구분: "추진 물건"
+        수정일: p.querySelector("#date").value
       };
       userData.push(d);
-      populateFilters();
       render();
       if (infowindow) infowindow.close();
-    }
-
-    function saveMemo(key, el) {
-      const val = el.parentElement.querySelector("textarea").value;
-      localStorage.setItem(key, val);
-      alert("저장되었습니다.");
-      if (infowindow) infowindow.close();
-    }
-
-    function deleteMemo(key, el) {
-      localStorage.removeItem(key);
-      el.parentElement.querySelector("textarea").value = "";
-      alert("삭제되었습니다.");
-      if (infowindow) infowindow.close();
-    }
-
-    function searchAddress() {
-      const keyword = document.getElementById("addrSearch").value;
-      geocoder.addressSearch(keyword, (result, status) => {
-        if (status === kakao.maps.services.Status.OK) {
-          const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
-          map.setCenter(loc);
-          if (searchMarker) searchMarker.setMap(null);
-          searchMarker = new kakao.maps.Marker({
-            map, position: loc,
-            image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
-          });
-        } else alert("주소를 찾을 수 없습니다.");
-      });
-    }
-
-    function goToCurrentLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-          map.setCenter(latlng);
-          if (currentMarker) currentMarker.setMap(null);
-          currentMarker = new kakao.maps.Marker({
-            map, position: latlng,
-            image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
-          });
-        }, () => alert("위치 정보를 가져올 수 없습니다."));
-      }
     }
 
     function exportCSV() {
       const rows = [["담당자","개발팀","점포명","면적","보증금","권리금","임차료","수정일","위도","경도"]];
       userData.forEach(d => {
-        rows.push([d.담당자, d.개발팀, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon
+        rows.push([d.담당자, d.개발팀, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon]);
+      });
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      const blob = new Blob([bom, rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n")], {
+        type: "text/csv;charset=utf-8;"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "물건정보.csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
