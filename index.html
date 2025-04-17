@@ -2,14 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>pass mapker</title>
+  <title>GS25 통합형 지도</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; font-family: 'SUIT', sans-serif; }
     html, body { margin: 0; padding: 0; height: 100%; }
     #map { width: 100%; height: 100%; }
     #controls {
-      position: absolute; top: 10px; left: 10px;
+      position: absolute; top: 60px; left: 10px;
       z-index: 100; display: flex; flex-direction: column; gap: 6px;
       background: white; padding: 10px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
@@ -17,76 +17,38 @@
     #controls input, #controls select {
       padding: 6px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc;
     }
-    #exportBtn {
-      position: absolute; bottom: 20px; right: 20px;
-      z-index: 100; background: #0078FF; color: white;
-      padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer;
+    #exportBtn, #toggleControlsBtn, #locateBtn {
+      position: absolute; z-index: 100; background: #0078FF; color: white;
+      padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer;
     }
+    #toggleControlsBtn { top: 10px; left: 10px; }
+    #locateBtn { bottom: 70px; right: 20px; }
+    #exportBtn { bottom: 20px; right: 20px; }
     .popup, .input-form {
-      font-size: 14px;
-      line-height: 1.6;
-      width: 240px;
-      padding: 10px;
+      font-size: 14px; line-height: 1.6; width: 240px; padding: 10px;
       font-family: 'SUIT', sans-serif;
     }
     .popup textarea, .input-form input {
-      width: 100%;
-      padding: 6px;
-      font-size: 13px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      width: 100%; padding: 6px; font-size: 13px;
+      margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;
     }
-    .popup textarea {
-      height: 70px;
-      resize: none;
-    }
+    .popup textarea { height: 70px; resize: none; }
     .popup button, .input-form button {
-      margin-top: 8px;
-      margin-right: 6px;
-      padding: 6px 10px;
-      font-size: 13px;
-      border: none;
-      border-radius: 4px;
-      background: #0078FF;
-      color: white;
-      cursor: pointer;
+      margin-top: 8px; margin-right: 6px; padding: 6px 10px; font-size: 13px;
+      border: none; border-radius: 4px;
+      background: #0078FF; color: white; cursor: pointer;
     }
     .popup button:last-child, .input-form button:last-child {
-      background: #ccc;
-      color: #333;
+      background: #ccc; color: #333;
     }
     .popup .close-btn {
-      float: right;
-      font-size: 13px;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      color: #999;
-      margin-top: -4px;
-      margin-right: -4px;
+      float: right; font-size: 13px; cursor: pointer;
+      background: transparent; border: none; color: #999;
+      margin-top: -4px; margin-right: -4px;
     }
     .popup a {
-      color: #0078FF;
-      text-decoration: underline;
-      font-size: 13px;
+      color: #0078FF; text-decoration: underline; font-size: 13px;
     }
-
-    #toggleControlsBtn, #locateBtn {
-  position: absolute;
-  z-index: 100;
-  background: #0078FF;
-  color: white;
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-#toggleControlsBtn { top: 10px; left: 10px; }
-#locateBtn { bottom: 70px; right: 20px; }
-
-    
   </style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=services,clusterer"></script>
 </head>
@@ -185,9 +147,6 @@
       return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(30, 45));
     }
 
-    // ... 이하 기존 render(), saveMemo(), deleteMemo(), showInputForm(), addUserData(), exportCSV() 생략 ...
-  </script>
-</body>
     function populateFilters() {
       const years = new Set(), types = new Set();
       allData.forEach(d => {
@@ -249,8 +208,6 @@
             <div>권리금: ${store['권리금']}</div>
             <div>임차료: ${store['임차료']}</div>
             <div>수정일: ${store['수정일']}</div>
-            <div>📍 위도: ${lat.toFixed(6)}, 경도: ${lon.toFixed(6)}</div>
-            <a href='https://map.kakao.com/link/map/${store['점포명']},${lat},${lon}' target='_blank'>카카오맵에서 보기</a>
           `;
         } else {
           const memoKey = lat + "," + lon;
@@ -259,8 +216,6 @@
           popup.innerHTML += `
             <div><strong>${store['사업장명']}</strong></div>
             <div>${store['인허가일자']}</div>
-            <div>📍 위도: ${lat.toFixed(6)}, 경도: ${lon.toFixed(6)}</div>
-            <a href='https://map.kakao.com/link/map/${store['사업장명']},${lat},${lon}' target='_blank'>카카오맵에서 보기</a>
             <textarea>${memo}</textarea><br>
             <small>🕒 ${now}</small><br>
             <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
@@ -343,18 +298,6 @@
       const a = document.createElement("a");
       a.href = url; a.download = "물건정보.csv";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    function searchAddress() {
-      const keyword = document.getElementById("addrSearch").value;
-      geocoder.addressSearch(keyword, function(result, status) {
-        if (status === kakao.maps.services.Status.OK) {
-          const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
-          map.setCenter(loc);
-        } else {
-          alert("주소를 찾을 수 없습니다.");
-        }
-      });
     }
   </script>
 </body>
