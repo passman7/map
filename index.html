@@ -14,7 +14,7 @@
       background: white; padding: 10px; border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    #controls input, #controls select {
+    #controls input, #controls select, #locateBtn {
       padding: 6px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc;
     }
     #exportBtn {
@@ -80,6 +80,7 @@
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
+    <button id="locateBtn">📍 내 위치로 이동</button>
   </div>
   <button id="exportBtn">📤 엑셀로 내보내기</button>
   <div id="map"></div>
@@ -113,6 +114,17 @@
       document.getElementById("yearFilter").addEventListener("change", render);
       document.getElementById("typeFilter").addEventListener("change", render);
       document.getElementById("exportBtn").addEventListener("click", exportCSV);
+      document.getElementById("locateBtn").addEventListener("click", () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            map.setCenter(new kakao.maps.LatLng(lat, lon));
+          }, () => alert("위치 정보를 가져올 수 없습니다."));
+        } else {
+          alert("이 브라우저에서는 위치 정보 사용이 불가능합니다.");
+        }
+      });
 
       fetch("store_data.json")
         .then(res => res.json())
@@ -139,6 +151,7 @@
         if (d['인허가일자']) years.add(d['인허가일자'].substring(0, 4));
         if (d['구분']) types.add(d['구분']);
       });
+      types.add("추진물건");
       const yearSel = document.getElementById("yearFilter");
       [...years].sort().forEach(y => {
         const opt = document.createElement("option");
@@ -262,6 +275,7 @@
       const p = el.parentElement;
       const d = {
         lat, lon,
+        구분: "추진물건",
         담당자: p.querySelector("#mgr").value,
         점포명: p.querySelector("#name").value,
         면적: p.querySelector("#size").value,
