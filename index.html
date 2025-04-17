@@ -104,7 +104,6 @@
         .then(data => {
           allData = data;
           populateFilters();
-          document.getElementById("yearFilter").value = "2025";
           render();
         });
     };
@@ -153,6 +152,7 @@
         if (d['인허가일자']) years.add(d['인허가일자'].substring(0, 4));
         if (d['구분']) types.add(d['구분']);
       });
+      userData.forEach(d => types.add("추진 물건")); // ✅ 직접 추가
       const yearSel = document.getElementById("yearFilter");
       [...years].sort().forEach(y => {
         const opt = document.createElement("option");
@@ -209,6 +209,7 @@
             <div>권리금: ${store['권리금']}</div>
             <div>임차료: ${store['임차료']}</div>
             <div>수정일: ${store['수정일']}</div>
+            <a href="https://map.kakao.com/link/map/${encodeURIComponent(store['점포명'])},${store.lat},${store.lon}" target="_blank">📍 카카오맵에서 보기</a>
           `;
         } else {
           const memoKey = lat + "," + lon;
@@ -281,7 +282,8 @@
         보증금: p.querySelector("#deposit").value,
         권리금: p.querySelector("#premium").value,
         임차료: p.querySelector("#rent").value,
-        수정일: p.querySelector("#date").value
+        수정일: p.querySelector("#date").value,
+        구분: "추진 물건"
       };
       userData.push(d);
       render();
