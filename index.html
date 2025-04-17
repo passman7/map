@@ -59,6 +59,8 @@
     <input type="text" id="search" placeholder="사업장명 검색" />
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
+    <select id="typeFilter"><option value="all">추진 물건</option></select>
+    
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
   </div>
   <button id="locateBtn">📍 내 위치로 이동</button>
@@ -203,6 +205,7 @@
           popup.innerHTML += `
             <div><strong>${store['점포명']}</strong></div>
             <div>담당자: ${store['담당자']}</div>
+            <div>담당자: ${store['개발팀']}</div>
             <div>면적: ${store['면적']}</div>
             <div>보증금: ${store['보증금']}</div>
             <div>권리금: ${store['권리금']}</div>
@@ -273,6 +276,7 @@
       const d = {
         lat, lon,
         담당자: p.querySelector("#mgr").value,
+        개발팀: p.querySelector("#team").value,
         점포명: p.querySelector("#name").value,
         면적: p.querySelector("#size").value,
         보증금: p.querySelector("#deposit").value,
@@ -286,9 +290,9 @@
     }
 
     function exportCSV() {
-      const rows = [["담당자","점포명","면적","보증금","권리금","임차료","수정일","위도","경도"]];
+      const rows = [["담당자","개발팀","점포명","면적","보증금","권리금","임차료","수정일","위도","경도"]];
       userData.forEach(d => {
-        rows.push([d.담당자, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon]);
+        rows.push([d.담당자, d.개발팀, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon]);
       });
       const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
       const blob = new Blob([bom, rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n")], {
