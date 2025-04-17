@@ -71,6 +71,22 @@
       text-decoration: underline;
       font-size: 13px;
     }
+
+    #toggleControlsBtn, #locateBtn {
+  position: absolute;
+  z-index: 100;
+  background: #0078FF;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+#toggleControlsBtn { top: 10px; left: 10px; }
+#locateBtn { bottom: 70px; right: 20px; }
+
+    
   </style>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=services,clusterer"></script>
 </head>
@@ -80,6 +96,9 @@
     <select id="yearFilter"><option value="all">전체 연도</option></select>
     <select id="typeFilter"><option value="all">전체 구분</option></select>
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
+    <button id="toggleControlsBtn">🔍 검색 열기/닫기</button>
+    <button id="locateBtn">📍 내 위치로 이동</button>
+    <!-- exportBtn은 이미 있으면 추가 안 해도 됨 -->
   </div>
   <button id="exportBtn">📤 엑셀로 내보내기</button>
   <div id="map"></div>
@@ -113,6 +132,11 @@
       document.getElementById("yearFilter").addEventListener("change", render);
       document.getElementById("typeFilter").addEventListener("change", render);
       document.getElementById("exportBtn").addEventListener("click", exportCSV);
+      document.getElementById("toggleControlsBtn").addEventListener("click", () => {
+  const ctrl = document.getElementById("controls");
+  ctrl.style.display = ctrl.style.display === "none" ? "flex" : "none";
+});
+
 
       fetch("store_data.json")
         .then(res => res.json())
