@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title> Mapker </title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
   <style>
     * { box-sizing: border-box; font-family: 'SUIT', sans-serif; }
     html, body { margin: 0; padding: 0; height: 100%; }
@@ -56,9 +56,10 @@
   <div id="map"></div>
   <button id="toggleControlsBtn">🔍 검색 열기/닫기</button>
   <div id="controls">
-    <input type="text" id="search" placeholder="사업장명 검색" />
+    <input type="text" id="search" placeholder="점포명 검색" />
     <input type="number" id="startYear" placeholder="시작 연도" value="2025" />
     <input type="number" id="endYear" placeholder="종료 연도" value="2025" />
+    <select id="typeFilter"><option value="all">전체 구분</option></select>
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
   </div>
   <button id="locateBtn">📍 내 위치 </button>
@@ -139,12 +140,12 @@
     }
 
     function getMarkerImage(name, isUser) {
-      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(45, 45));
-      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(45, 45));
-      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(45, 45));
-      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(45, 45));
-      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(45, 45));
-      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(45, 45));
+      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(25, 25));
+      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(25, 25));
+      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(25, 25));
+      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(25, 25));
+      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(25, 25));
+      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(25, 25));
     }
 
     function populateFilters() {
