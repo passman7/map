@@ -57,8 +57,8 @@
   <button id="toggleControlsBtn">🔍 검색 열기/닫기</button>
   <div id="controls">
     <input type="text" id="search" placeholder="사업장명 검색" />
-    <select id="yearFilter"><option value="all">전체 연도</option></select>
-    <select id="typeFilter"><option value="all">전체 구분</option></select>
+    <input type="number" id="startYear" placeholder="시작 연도" value="2025" />
+    <input type="number" id="endYear" placeholder="종료 연도" value="2025" />
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
   </div>
   <button id="locateBtn">📍 내 위치 </button>
@@ -168,71 +168,73 @@
     }
 
     function render() {
-      clusterer.clear();
-      markers.forEach(m => m.setMap(null));
-      markers = [];
+  clusterer.clear();
+  markers.forEach(m => m.setMap(null));
+  markers = [];
 
-      const keyword = document.getElementById("search").value.trim();
-      const year = document.getElementById("yearFilter").value;
-      const type = document.getElementById("typeFilter").value;
+  const keyword = document.getElementById("search").value.trim();
+  const startYear = parseInt(document.getElementById("startYear").value, 10);
+  const endYear = parseInt(document.getElementById("endYear").value, 10);
+  const type = document.getElementById("typeFilter").value;
 
-      const filtered = [...allData, ...userData].filter(d => {
-        const matchName = !keyword || (d['사업장명'] ?? d['점포명'])?.includes(keyword);
-        const date = d['인허가일자'] ?? d['수정일'];
-        const matchYear = year === "all" || date?.startsWith(year);
-        const matchType = type === "all" || d['구분'] === type;
-        return matchName && matchYear && matchType;
-      });
+  const filtered = [...allData, ...userData].filter(d => {
+    const matchName = !keyword || (d['사업장명'] ?? d['점포명'])?.includes(keyword);
+    const date = (d['인허가일자'] ?? d['수정일'])?.substring(0, 4);
+    const matchYear = (!startYear || !endYear) || (date >= startYear && date <= endYear);
+    const matchType = type === "all" || d['구분'] === type;
+    return matchName && matchYear && matchType;
+  });
 
-      filtered.forEach(store => {
-        const lat = parseFloat(store.lat), lon = parseFloat(store.lon);
-        const name = store['사업장명'] ?? store['점포명'] ?? '';
-        const isUser = !!store['점포명'];
-        const marker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(lat, lon),
-          image: getMarkerImage(name, isUser)
-        });
-        marker.setMap(map);
-        markers.push(marker);
+  // 기존 로직 유지
+  filtered.forEach(store => {
+    const lat = parseFloat(store.lat), lon = parseFloat(store.lon);
+    const name = store['사업장명'] ?? store['점포명'] ?? '';
+    const isUser = !!store['점포명'];
+    const marker = new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(lat, lon),
+      image: getMarkerImage(name, isUser)
+    });
+    marker.setMap(map);
+    markers.push(marker);
 
-        const popup = document.createElement("div");
-        popup.className = "popup";
-        popup.innerHTML = `<button class='close-btn' onclick='infowindow.close()'>✖</button>`;
+    const popup = document.createElement("div");
+    popup.className = "popup";
+    popup.innerHTML = `<button class='close-btn' onclick='infowindow.close()'>✖</button>`;
 
-        if (isUser) {
-          popup.innerHTML += `
-            <div><strong>${store['점포명']}</strong></div>
-            <div>담당자: ${store['담당자']}</div>
-            <div>개발팀: ${store['개발팀']}</div>
-            <div>면적: ${store['면적']}</div>
-            <div>보증금: ${store['보증금']}</div>
-            <div>권리금: ${store['권리금']}</div>
-            <div>임차료: ${store['임차료']}</div>
-            <div>수정일: ${store['수정일']}</div>
-          `;
-        } else {
-          const memoKey = lat + "," + lon;
-          const memo = localStorage.getItem(memoKey) || "";
-          const now = new Date().toLocaleString();
-          popup.innerHTML += `
-            <div><strong>${store['사업장명']}</strong></div>
-            <div>${store['인허가일자']}</div>
-            <textarea>${memo}</textarea><br>
-            <small>🕒 ${now}</small><br>
-            <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
-            <button onclick="deleteMemo('${memoKey}', this)">❌ 삭제</button>
-          `;
-        }
-
-        kakao.maps.event.addListener(marker, 'click', function() {
-          if (infowindow) infowindow.close();
-          infowindow = new kakao.maps.InfoWindow({ content: popup });
-          infowindow.open(map, marker);
-        });
-      });
-
-      clusterer.addMarkers(markers);
+    if (isUser) {
+      popup.innerHTML += `
+        <div><strong>${store['점포명']}</strong></div>
+        <div>담당자: ${store['담당자']}</div>
+        <div>개발팀: ${store['개발팀']}</div>
+        <div>면적: ${store['면적']}</div>
+        <div>보증금: ${store['보증금']}</div>
+        <div>권리금: ${store['권리금']}</div>
+        <div>임차료: ${store['임차료']}</div>
+        <div>수정일: ${store['수정일']}</div>
+      `;
+    } else {
+      const memoKey = lat + "," + lon;
+      const memo = localStorage.getItem(memoKey) || "";
+      const now = new Date().toLocaleString();
+      popup.innerHTML += `
+        <div><strong>${store['사업장명']}</strong></div>
+        <div>${store['인허가일자']}</div>
+        <textarea>${memo}</textarea><br>
+        <small>🕒 ${now}</small><br>
+        <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
+        <button onclick="deleteMemo('${memoKey}', this)">❌ 삭제</button>
+      `;
     }
+
+    kakao.maps.event.addListener(marker, 'click', function() {
+      if (infowindow) infowindow.close();
+      infowindow = new kakao.maps.InfoWindow({ content: popup });
+      infowindow.open(map, marker);
+    });
+  });
+
+  clusterer.addMarkers(markers);
+}
 
     function saveMemo(key, el) {
       const val = el.parentElement.querySelector("textarea").value;
