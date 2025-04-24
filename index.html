@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>통합형 지도</title>
+  <title> Mapker </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; font-family: 'SUIT', sans-serif; }
@@ -61,8 +61,8 @@
     <select id="typeFilter"><option value="all">전체 구분</option></select>
     <input type="text" id="addrSearch" placeholder="주소 검색 (Enter)" />
   </div>
-  <button id="locateBtn">📍 내 위치로 이동</button>
-  <button id="exportBtn">📤 엑셀로 내보내기</button>
+  <button id="locateBtn">📍 내 위치 </button>
+  <button id="exportBtn">📤 엑셀 내보내기</button>
 
   <script>
     let map, clusterer, geocoder, searchMarker = null, currentMarker = null;
