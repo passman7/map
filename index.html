@@ -139,12 +139,12 @@
     }
 
     function getMarkerImage(name, isUser) {
-      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(30, 45));
-      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(30, 45));
-      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(30, 45));
-      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(30, 45));
-      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(30, 45));
-      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(30, 45));
+      if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(45, 45));
+      if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(45, 45));
+      if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(45, 45));
+      if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(45, 45));
+      if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(45, 45));
+      return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(45, 45));
     }
 
     function populateFilters() {
