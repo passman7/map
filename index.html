@@ -1,6 +1,3 @@
-// 전체 지도 기반 출점 시스템 - GS25
-// HTML 구조, 지도 UI, 마커 로직, 메모 기능, 물건 등록 + 저장/엑셀 내보내기까지 통합
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -81,21 +78,59 @@
       display: inline-block; margin-top: 6px; color: var(--primary);
       text-decoration: underline; font-size: 13px;
     }
+
+    /* 토글 버튼 스타일 (모바일에서만 보임) */
+    #toggleControlsBtn {
+      position: absolute; top: 70px; left: 20px; z-index: 101;
+      background: var(--primary); color: white; padding: 10px 15px; border: none;
+      border-radius: var(--radius); cursor: pointer; font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); display: none; /* 기본적으로 숨김 */
+    }
+
+    /* 미디어 쿼리 for 모바일 (최대 768px) */
+    @media (max-width: 768px) {
+      header { padding: 0 15px; }
+      header h1 { font-size: 16px; }
+
+      #controls {
+        top: 66px; /* 헤더 아래로 조정 */
+        left: 15px;
+        right: 15px;
+        max-width: unset; /* 최대 너비 제한 해제 */
+        width: auto; /* 너비를 자동으로 설정 */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: none; /* 모바일에서 기본적으로 숨김 */
+      }
+
+      #toggleControlsBtn {
+        display: block; /* 모바일에서만 보임 */
+      }
+      
+      .map-action {
+        right: 15px;
+        bottom: 15px;
+      }
+
+      .map-action button {
+        padding: 10px 18px;
+        font-size: 13px;
+      }
+
+      .popup, .input-form {
+        width: calc(100vw - 60px); /* 화면 너비에 맞춰 조정 */
+        max-width: 300px; /* 너무 커지지 않도록 최대 너비 설정 */
+      }
+    }
   </style>
 </head>
 
 <body>
-<!-- UI 구조 영역 -->
 <header>
   <h1>나의 대동여지도</h1>
   <span>by.mapker</span>
-  <div>
-    <button id="toggleControlsBtn" style="padding: 6px 10px; font-size: 13px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
-      🔍 검색 열기/닫기
-    </button>
 </header>
 <div id="map"></div>
-<div id="controls">
+<button id="toggleControlsBtn">🔍 검색 열기/닫기</button> <div id="controls">
   <label for="search">점포명</label>
   <input type="text" id="search" placeholder="점포명 검색" />
   <label for="startYear">시작 연도</label>
@@ -112,14 +147,6 @@
 <div class="map-action">
   <button id="locateBtn">📍 내 위치</button>
   <button id="exportBtn">📤 엑셀 저장</button>
-</div>
-<!-- 기능 추가 영역은 script에 포함됩니다. 추후 이어서 작성됩니다. -->
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=services,clusterer"></script>
-</head>
-<body>
-  <div id="map"></div>
-  <button id="locateBtn">📍 내 위치</button>
-  <button id="exportBtn">📤 엑셀 내보내기</button>
 </div>
 
   <script>
@@ -148,18 +175,36 @@ let editingStoreId = null;
       geocoder = new kakao.maps.services.Geocoder();
       clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 6 });
 
+      // 지도의 'idle' 이벤트 리스너 추가
+      kakao.maps.event.addListener(map, 'idle', render);
+
       map.addListener("rightclick", e => showInputForm(e.latLng));
       document.getElementById("addrSearch").addEventListener("keypress", e => { if (e.key === "Enter") searchAddress(); });
-      document.getElementById("search").addEventListener("input", render);
-      document.getElementById("typeFilter").addEventListener("change", render);
-      document.getElementById("exportBtn").addEventListener("click", exportCSV);
-      document.getElementById("toggleControlsBtn").addEventListener("click", () => {
-        const ctrl = document.getElementById("controls");
-        ctrl.style.display = ctrl.style.display === "none" ? "flex" : "none";
+      
+      // '점포명 검색' 입력 필드에서 Enter 키 눌렀을 때도 지도 이동 기능 추가
+      document.getElementById("search").addEventListener("input", triggerRenderAfterFilterChange);
+      document.getElementById("search").addEventListener("keypress", e => {
+        if (e.key === "Enter") {
+          triggerRenderAfterFilterChange(true); // Enter 시에는 지도 이동 강제 (true 전달)
+        }
       });
+
+      document.getElementById("typeFilter").addEventListener("change", triggerRenderAfterFilterChange);
+      document.getElementById("startYear").addEventListener("input", triggerRenderAfterFilterChange);
+      document.getElementById("endYear").addEventListener("input", triggerRenderAfterFilterChange);
+
+      document.getElementById("exportBtn").addEventListener("click", exportCSV);
       document.getElementById("locateBtn").addEventListener("click", goToCurrentLocation);
-      document.getElementById("startYear").addEventListener("input", render);
-      document.getElementById("endYear").addEventListener("input", render);
+
+      // 토글 버튼 이벤트 리스너 추가
+      document.getElementById("toggleControlsBtn").addEventListener("click", () => {
+        const controls = document.getElementById("controls");
+        if (controls.style.display === "none" || controls.style.display === "") {
+          controls.style.display = "flex";
+        } else {
+          controls.style.display = "none";
+        }
+      });
 
 
       fetch("store_data.json")
@@ -167,8 +212,12 @@ let editingStoreId = null;
         .then(data => {
           allData = data;
           populateFilters();
-          render();
+          render(); // 초기 로딩 시에도 render 호출
         });
+
+      function triggerRenderAfterFilterChange(mapMoveToResult = false) {
+        render(mapMoveToResult); // mapMoveToResult 값을 render 함수로 전달
+      }
 
       function getMarkerImage(name, isUser) {
         if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(30, 30));
@@ -193,7 +242,7 @@ let editingStoreId = null;
         });
       }
 
-      function render() {
+      function render(mapMoveToResult = false) {
         clusterer.clear();
         markers.forEach(m => m.setMap(null));
         markers = [];
@@ -203,14 +252,41 @@ let editingStoreId = null;
         const endYear = parseInt(document.getElementById("endYear").value, 10);
         const type = document.getElementById("typeFilter").value;
 
+        const bounds = map.getBounds();
+        const southWest = bounds.getSouthWest();
+        const northEast = bounds.getNorthEast();
+
         const filtered = [...allData, ...userData].filter(d => {
           const name = d['사업장명'] ?? d['점포명'] ?? '';
           const date = (d['인허가일자'] ?? d['수정일'])?.substring(0, 4);
           const matchName = !keyword || name.includes(keyword);
           const matchYear = (!startYear || !endYear) || (date >= startYear && date <= endYear);
           const matchType = type === "all" || (d['구분'] ?? "추진 물건") === type;
-          return matchName && matchYear && matchType;
+
+          const lat = parseFloat(d.lat);
+          const lon = parseFloat(d.lon);
+          
+          const inBounds = (lat >= southWest.getLat() && lat <= northEast.getLat()) &&
+                           (lon >= southWest.getLng() && lon <= northEast.getLng());
+          
+          return matchName && matchYear && matchType && (keyword ? true : inBounds);
         });
+
+        if (mapMoveToResult && filtered.length > 0) {
+            if (filtered.length === 1) {
+                const targetStore = filtered[0];
+                const moveLatLon = new kakao.maps.LatLng(parseFloat(targetStore.lat), parseFloat(targetStore.lon));
+                map.setCenter(moveLatLon);
+                map.setLevel(4);
+            } else {
+                const bounds = new kakao.maps.LatLngBounds();
+                filtered.forEach(store => {
+                    bounds.extend(new kakao.maps.LatLng(parseFloat(store.lat), parseFloat(store.lon)));
+                });
+                map.setBounds(bounds);
+            }
+        }
+
 
         filtered.forEach(store => {
           const lat = parseFloat(store.lat), lon = parseFloat(store.lon);
@@ -227,25 +303,21 @@ let editingStoreId = null;
           popup.className = "popup";
           popup.innerHTML = `<button class='close-btn' onclick='window.infowindow.close()'>✖</button>`;
        
-          if (isUser) {
-  popup.innerHTML += `
-    <div><strong>${store['점포명']}</strong></div>
-    <div>담당자: ${store['담당자']}</div>
-    <div>개발팀: ${store['개발팀']}</div>
-    <div>면적: ${store['면적']}</div>
-    <div>보증금: ${store['보증금']}</div>
-    <div>권리금: ${store['권리금']}</div>
-    <div>임차료: ${store['임차료']}</div>
-    <div>수정일: ${store['수정일']}</div>
-    <a href='https://map.kakao.com/link/search/${encodeURIComponent(store["점포명"] ?? "")}' target='_blank'>📍 카카오맵에서 보기</a>
-    <div style="margin-top: 10px;"> 
-      <button onclick="deleteData('${store.id}')">🗑️ 삭제</button>
-    </div>`;
-}
- 
-          
-          // 인허가 마커 메모
-          else {
+          if (isUser) { // 사용자 추가 마커 (추진 물건)
+            popup.innerHTML += `
+              <div><strong>${store['점포명']}</strong></div>
+              <div>담당자: ${store['담당자']}</div>
+              <div>개발팀: ${store['개발팀']}</div>
+              <div>면적: ${store['면적']}</div>
+              <div>보증금: ${store['보증금']}</div>
+              <div>권리금: ${store['권리금']}</div>
+              <div>임차료: ${store['임차료']}</div>
+              <div>수정일: ${store['수정일']}</div>
+              <a href='https://map.kakao.com/link/map/${encodeURIComponent(store["점포명"] ?? "")},${store.lat},${store.lon}' target='_blank'>📍 카카오맵에서 보기</a>
+              <div style="margin-top: 10px;"> 
+                <button onclick="deleteData('${store.id}')">🗑️ 삭제</button>
+              </div>`;
+          } else { // 인허가 마커 (기존 데이터)
             const memoKey = lat + "," + lon;
             const memo = localStorage.getItem(memoKey) || "";
             const now = new Date().toLocaleString();
@@ -274,76 +346,58 @@ let editingStoreId = null;
         return 'id-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
       }
 
-
       function showInputForm(latlng) {
-  if (infowindow) infowindow.close();
+        if (infowindow) infowindow.close();
 
-  const now = new Date().toISOString().split("T")[0];
-  const div = document.createElement("div");
-  div.className = "input-form";
-  div.innerHTML = `
-    <strong>물건 정보 입력</strong><br>
-    담당자: <input id="mgr"><br>
-    개발팀: <input id="team"><br>
-    점포명: <input id="name"><br>
-    면적: <input id="size"><br>
-    보증금: <input id="deposit"><br>
-    권리금: <input id="premium"><br>
-    임차료: <input id="rent"><br>
-    수정일: <input id="date" value="${now}"><br>
-    <button onclick="addUserData(${latlng.getLat()}, ${latlng.getLng()}, this)">저장</button>
-    <button onclick="removeInputWindow()">취소</button>
-    <button onclick="deleteUserMarker(${latlng.getLat()}, ${latlng.getLng()})">삭제</button>
-  `;
+        const now = new Date().toISOString().split("T")[0];
+        const div = document.createElement("div");
+        div.className = "input-form";
+        div.innerHTML = `
+          <strong>물건 정보 입력</strong><br>
+          담당자: <input id="mgr"><br>
+          개발팀: <input id="team"><br>
+          점포명: <input id="name"><br>
+          면적: <input id="size"><br>
+          보증금: <input id="deposit"><br>
+          권리금: <input id="premium"><br>
+          임차료: <input id="rent"><br>
+          수정일: <input id="date" value="${now}"><br>
+          <button onclick="addUserData(${latlng.getLat()}, ${latlng.getLng()}, this)">저장</button>
+          <button onclick="removeInputWindow()">취소</button>
+          <button onclick="deleteDataByLatLng(${latlng.getLat()}, ${latlng.getLng()})">🗑️ 삭제</button>
+        `;
 
-  infowindow = new kakao.maps.InfoWindow({ position: latlng, content: div });
-  infowindow.open(map);
-  window.infowindow = infowindow;
-  window.infowindowDom = div;
-}
+        infowindow = new kakao.maps.InfoWindow({ position: latlng, content: div });
+        infowindow.open(map);
+        window.infowindow = infowindow;
+        window.infowindowDom = div;
+      }
 
-window.removeInputWindow = function() {
-  if (window.infowindow) window.infowindow.close();
-  if (window.infowindowDom) window.infowindowDom.remove(); // ✅ DOM도 제거
-  window.infowindowDom = null;
-}
-
+      window.removeInputWindow = function() {
+        if (window.infowindow) window.infowindow.close();
+        if (window.infowindowDom) window.infowindowDom.remove();
+        window.infowindowDom = null;
+      }
 
       window.addUserData = function(lat, lon, el) {
         const p = el.parentElement;
         const d = {
-            id: generateUniqueId(), // ✅ 등록할 때 고유 id 생성
-        구분: "추진 물건",
-          lat, lon,
-          담당자: p.querySelector("#mgr").value,
-          개발팀: p.querySelector("#team").value,
-          점포명: p.querySelector("#name").value,
-          면적: p.querySelector("#size").value,
-          보증금: p.querySelector("#deposit").value,
-          권리금: p.querySelector("#premium").value,
-          임차료: p.querySelector("#rent").value,
-          수정일: p.querySelector("#date").value
+            id: generateUniqueId(),
+            구분: "추진 물건",
+            lat, lon,
+            담당자: p.querySelector("#mgr").value,
+            개발팀: p.querySelector("#team").value,
+            점포명: p.querySelector("#name").value,
+            면적: p.querySelector("#size").value,
+            보증금: p.querySelector("#deposit").value,
+            권리금: p.querySelector("#premium").value,
+            임차료: p.querySelector("#rent").value,
+            수정일: p.querySelector("#date").value
         };
         userData.push(d);
         render();
         if (infowindow) infowindow.close();
       }
-
-      window.deleteUserMarker = function(lat, lon) {
-  if (!confirm("정말 삭제하시겠습니까?")) return;
-  
-  const before = userData.length;
-  userData = userData.filter(d => !(parseFloat(d.lat) === lat && parseFloat(d.lon) === lon));
-  if (userData.length < before) {
-    alert("삭제되었습니다.");
-  } else {
-    alert("삭제 대상이 없습니다.");
-  }
-
-  if (infowindow) infowindow.close();
-  render();
-};
-
 
       window.saveMemo = function(key, el) {
         const val = el.parentElement.querySelector("textarea").value;
@@ -388,6 +442,7 @@ window.removeInputWindow = function() {
               map, position: loc,
               image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
             });
+            render(); // 주소 검색 후 지도가 이동했으므로, 해당 뷰포트의 마커 렌더링
           } else {
             alert("주소를 찾을 수 없습니다.");
           }
@@ -395,79 +450,58 @@ window.removeInputWindow = function() {
       }
 
       function goToCurrentLocation() {
-  if (!navigator.geolocation) {
-    alert("브라우저에서 위치 기능을 지원하지 않습니다.");
-    return;
-  }
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(pos => {
+            const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+            map.setCenter(latlng);
+            if (currentMarker) currentMarker.setMap(null);
+            currentMarker = new kakao.maps.Marker({
+              map, position: latlng,
+              image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
+            });
+            render(); // 현재 위치 이동 후 해당 뷰포트의 마커 렌더링
+          }, () => alert("위치 정보를 가져올 수 없습니다."));
+        }
+      }
 
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-      map.setLevel(4); // 📌 좀 더 확대해서 보기 좋게
-      map.panTo(latlng); // ✅ setCenter → panTo로 자연스럽게 이동
+      function saveData() {
+        // ... (기존 saveData 함수 내용, 현재는 사용되지 않음)
+      }
 
-      if (currentMarker) currentMarker.setMap(null); // 기존 마커 삭제
-      currentMarker = new kakao.maps.Marker({
-        position: latlng,
-        map: map,
-        image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
-      });
-    },
-    err => {
-      alert("위치 정보를 가져올 수 없습니다. 브라우저 권한을 확인해주세요.");
-      console.error(err);
-    }
-  );
-}
+      window.deleteData = function(id) {
+        if (!confirm("정말 삭제하시겠습니까?")) {
+          return;
+        }
 
+        const initialUserCount = userData.length;
+        userData = userData.filter(item => item.id !== id);
 
-          /* 저장 */
-function saveData() {
-  const newData = {
-    id: editingStoreId || generateUniqueId(),
-    "담당자": document.getElementById("input담당자").value,
-    "개발팀": document.getElementById("input개발팀").value,
-    "사업장명": document.getElementById("input점포명").value,
-    "면적": document.getElementById("input면적").value,
-    "보증금": document.getElementById("input보증금").value,
-    "권리금": document.getElementById("input권리금").value,
-    "임차료": document.getElementById("input임차료").value,
-    "수정일": document.getElementById("input수정일").value
-  };
+        if (userData.length < initialUserCount) {
+          alert("삭제되었습니다.");
+          if (infowindow) infowindow.close();
+          render();
+          return;
+        }
 
-  if (editingStoreId) {
-    const index = allData.findIndex(s => s.id === editingStoreId);
-    if (index !== -1) {
-      allData[index] = newData;
-      alert("수정 완료!");
-    }
-  } else {
-    allData.push(newData);
-    alert("등록 완료!");
-  }
+        alert("삭제할 데이터를 찾을 수 없습니다. (ID: " + id + ")");
+      };
 
-  editingStoreId = null;
-  render();
-}
+      window.deleteDataByLatLng = function(lat, lon) {
+        if (!confirm("정말 삭제하시겠습니까?")) {
+          return;
+        }
 
-//물건 정보 입력 삭제//
-function deleteData(id) {
-  if (!confirm("정말 삭제하시겠습니까?")) {
-    return;
-  }
+        const initialUserCount = userData.length;
+        userData = userData.filter(d => !(parseFloat(d.lat) === lat && parseFloat(d.lon) === lon));
 
-  const index = allData.findIndex(item => item.id === id);
-  if (index !== -1) {
-    allData.splice(index, 1); // ✅ 데이터 삭제
-    alert("삭제되었습니다.");
-    if (infowindow) infowindow.close(); // ✅ 팝업 닫기
-    render(); // ✅ 지도 다시 그리기
-  } else {
-    alert("삭제할 데이터를 찾을 수 없습니다.");
-  }
-}
-
-
+        if (userData.length < initialUserCount) {
+          alert("삭제되었습니다.");
+          if (infowindow) infowindow.close();
+          render();
+        } else {
+          alert("삭제할 데이터를 찾을 수 없습니다.");
+        }
+      };
     });
   </script>
 </body>
