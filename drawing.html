@@ -1,12 +1,12 @@
-<!-- 낙서장 1: Kakao Map + Canvas (파일명: kakao_doodle.html) -->
+<!-- 낙서장 1: Kakao Map + Canvas (파일명: kakao_doodle.html with 도구추가) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <title>KakaoMap 낙서장</title>
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63"></script>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_APP_KEY"></script>
   <style>
-    html, body, #map { margin: 0; padding: 0; height: 100%; }
+    html, body, #map { margin: 0; padding: 0; height: 100%; overflow: hidden; }
     canvas {
       position: absolute;
       top: 0; left: 0;
@@ -17,8 +17,12 @@
       top: 10px; left: 10px;
       z-index: 20;
       background: white;
-      padding: 8px;
-      border-radius: 6px;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    #tools button {
+      margin: 2px;
     }
   </style>
 </head>
@@ -26,8 +30,13 @@
   <div id="map"></div>
   <canvas id="drawLayer"></canvas>
   <div id="tools">
+    <button id="pen">펜</button>
+    <button id="eraser">지우개</button>
     <button id="clear">전체 지우기</button>
     <button id="save">저장</button>
+    <br><br>
+    색상: <input type="color" id="colorPicker" value="#ff0000" />
+    굵기: <input type="range" id="lineWidth" min="1" max="10" value="3" />
   </div>
 
   <script>
@@ -42,6 +51,19 @@
     canvas.height = window.innerHeight;
 
     let drawing = false;
+    let mode = 'pen';
+    let color = '#ff0000';
+    let lineWidth = 3;
+
+    document.getElementById('colorPicker').addEventListener('input', e => {
+      color = e.target.value;
+    });
+    document.getElementById('lineWidth').addEventListener('input', e => {
+      lineWidth = parseInt(e.target.value);
+    });
+    document.getElementById('pen').addEventListener('click', () => mode = 'pen');
+    document.getElementById('eraser').addEventListener('click', () => mode = 'eraser');
+
     canvas.addEventListener('pointerdown', e => {
       drawing = true;
       ctx.beginPath();
@@ -49,15 +71,21 @@
     });
     canvas.addEventListener('pointermove', e => {
       if (!drawing) return;
-      ctx.lineTo(e.offsetX, e.offsetY);
-      ctx.strokeStyle = '#ff0000';
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      if (mode === 'pen') {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      } else if (mode === 'eraser') {
+        ctx.clearRect(e.offsetX - 5, e.offsetY - 5, 10, 10);
+      }
     });
     canvas.addEventListener('pointerup', () => drawing = false);
 
     document.getElementById('save').addEventListener('click', () => {
       localStorage.setItem('kakao_doodle', canvas.toDataURL());
+      alert('저장되었습니다!');
     });
     document.getElementById('clear').addEventListener('click', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -73,83 +101,3 @@
   </script>
 </body>
 </html>
-
-<!-- 낙서장 2: Leaflet + Canvas (파일명: leaflet_doodle.html) -->
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>Leaflet 낙서장</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <style>
-    html, body, #map { margin: 0; padding: 0; height: 100%; }
-    canvas {
-      position: absolute;
-      top: 0; left: 0;
-      z-index: 10;
-    }
-    #tools {
-      position: absolute;
-      top: 10px; left: 10px;
-      z-index: 20;
-      background: white;
-      padding: 8px;
-      border-radius: 6px;
-    }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
-  <canvas id="drawLayer"></canvas>
-  <div id="tools">
-    <button id="clear">전체 지우기</button>
-    <button id="save">저장</button>
-  </div>
-  <script>
-    const map = L.map('map').setView([37.5665, 126.9780], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-    const canvas = document.getElementById('drawLayer');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let drawing = false;
-    canvas.addEventListener('pointerdown', e => {
-      drawing = true;
-      ctx.beginPath();
-      ctx.moveTo(e.offsetX, e.offsetY);
-    });
-    canvas.addEventListener('pointermove', e => {
-      if (!drawing) return;
-      ctx.lineTo(e.offsetX, e.offsetY);
-      ctx.strokeStyle = '#0000ff';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    });
-    canvas.addEventListener('pointerup', () => drawing = false);
-
-    document.getElementById('save').addEventListener('click', () => {
-      localStorage.setItem('leaflet_doodle', canvas.toDataURL());
-    });
-    document.getElementById('clear').addEventListener('click', () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      localStorage.removeItem('leaflet_doodle');
-    });
-
-    const saved = localStorage.getItem('leaflet_doodle');
-    if (saved) {
-      const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0);
-      img.src = saved;
-    }
-  </script>
-</body>
-</html>
-
-<!-- 낙서장 3: Firebase 연동 낙서장 (파일명: firebase_doodle.html) -->
-<!-- Firebase SDK 설치 및 Firestore 저장 기능 별도 구현 필요 -->
-<!-- <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script> -->
-<!-- Firebase 초기화 후 drawLayer.toDataURL()로 이미지 저장 / 로딩 구현 예정 -->
