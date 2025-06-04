@@ -10,74 +10,74 @@
 
     /* 공통 스타일 정의 */
     :root {
-      --primary: #0078FF;
-      --secondary: #f0f2f5;
-      --font: 'SUIT', sans-serif;
-      --radius: 12px;
-      --text: #333;
-      --card-bg: #fff;
+      --primary: #0078FF; /* 주요 색상 (파란색 계열) */
+      --secondary: #f0f2f5; /* 보조 색상 (회색 계열) */
+      --font: 'SUIT', sans-serif; /* 기본 폰트 */
+      --radius: 12px; /* 둥근 모서리 반경 */
+      --text: #333; /* 기본 텍스트 색상 */
+      --card-bg: #fff; /* 카드 배경 색상 */
     }
-    * { box-sizing: border-box; font-family: var(--font); }
-    html, body { margin: 0; padding: 0; height: 100%; background-color: var(--secondary); color: var(--text); }
+    * { box-sizing: border-box; font-family: var(--font); } /* 모든 요소에 box-sizing 및 폰트 적용 */
+    html, body { margin: 0; padding: 0; height: 100%; background-color: var(--secondary); color: var(--text); } /* HTML, Body 기본 스타일 */
 
     /* 상단 헤더 */
     header {
       position: absolute; top: 0; left: 0; right: 0; height: 56px; padding: 0 20px;
       background: var(--card-bg); display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 100; /* 그림자 효과와 높은 z-index */
     }
-    header h1 { font-size: 18px; font-weight: 600; color: var(--primary); }
+    header h1 { font-size: 18px; font-weight: 600; color: var(--primary); } /* 헤더 제목 스타일 */
 
     /* 지도 영역 */
-    #map { width: 100%; height: 100%; }
+    #map { width: 100%; height: 100%; } /* 지도가 화면 전체를 차지하도록 설정 */
 
     /* 좌측 검색 필터 패널 */
     #controls {
       position: absolute; top: 70px; left: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px;
       background: var(--card-bg); padding: 18px; border-radius: var(--radius);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); max-width: 260px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); max-width: 260px; /* 필터 패널 스타일 */
     }
-    #controls label { font-size: 13px; margin-bottom: 4px; font-weight: 600; }
+    #controls label { font-size: 13px; margin-bottom: 4px; font-weight: 600; } /* 라벨 스타일 */
     #controls input, #controls select {
       padding: 10px 12px; font-size: 15px; border-radius: 8px; border: 1px solid #ccc; background: #fafafa;
-    }
+    } /* 입력 필드 및 선택 박스 스타일 */
 
     /* 우측 하단 기능 버튼 */
     .map-action {
       position: absolute; right: 30px; bottom: 30px;
-      display: flex; flex-direction: column; gap: 10px; z-index: 100;
+      display: flex; flex-direction: column; gap: 10px; z-index: 100; /* 액션 버튼 그룹 스타일 */
     }
     .map-action button {
       background: var(--primary); color: white; padding: 12px 20px; border: none;
       border-radius: var(--radius); cursor: pointer; font-weight: 600;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: transform 0.15s ease-in-out; font-size: 14px;
-    }
-    .map-action button:hover { transform: scale(1.05); }
+    } /* 액션 버튼 기본 스타일 */
+    .map-action button:hover { transform: scale(1.05); } /* 버튼 호버 효과 */
 
     /* 입력창 및 마커 메모 팝업 스타일 */
     .popup, .input-form {
       font-size: 14px; line-height: 1.6; width: 260px; padding: 12px;
       font-family: var(--font);
-    }
+    } /* 팝업 및 입력 폼 공통 스타일 */
     .popup textarea, .input-form input {
       width: 100%; padding: 8px; font-size: 13px; margin-top: 6px;
       border: 1px solid #ccc; border-radius: 8px;
-    }
-    .popup textarea { height: 70px; resize: none; }
+    } /* 텍스트 에리아 및 입력 필드 스타일 */
+    .popup textarea { height: 70px; resize: none; } /* 텍스트 에리아 높이 및 크기 조절 방지 */
     .popup button, .input-form button {
       margin-top: 10px; margin-right: 6px; padding: 8px 12px;
       font-size: 13px; border: none; border-radius: 6px;
       background: var(--primary); color: white; cursor: pointer;
-    }
-    .popup button:last-child, .input-form button:last-child { background: #ccc; color: var(--text); }
+    } /* 팝업/폼 버튼 스타일 */
+    .popup button:last-child, .input-form button:last-child { background: #ccc; color: var(--text); } /* 마지막 버튼 스타일 */
     .popup .close-btn {
       float: right; font-size: 13px; cursor: pointer; background: transparent;
       border: none; color: #999; margin-top: -4px; margin-right: -4px;
-    }
+    } /* 닫기 버튼 스타일 */
     .popup a {
       display: inline-block; margin-top: 6px; color: var(--primary);
       text-decoration: underline; font-size: 13px;
-    }
+    } /* 링크 스타일 */
 
     /* 토글 버튼 스타일 (모바일에서만 보임) */
     #toggleControlsBtn {
@@ -89,8 +89,8 @@
 
     /* 미디어 쿼리 for 모바일 (최대 768px) */
     @media (max-width: 768px) {
-      header { padding: 0 15px; }
-      header h1 { font-size: 16px; }
+      header { padding: 0 15px; } /* 헤더 패딩 조정 */
+      header h1 { font-size: 16px; } /* 헤더 제목 폰트 크기 조정 */
 
       #controls {
         top: 66px; /* 헤더 아래로 조정 */
@@ -109,17 +109,17 @@
       .map-action {
         right: 15px;
         bottom: 15px;
-      }
+      } /* 액션 버튼 위치 조정 */
 
       .map-action button {
         padding: 10px 18px;
         font-size: 13px;
-      }
+      } /* 액션 버튼 패딩 및 폰트 크기 조정 */
 
       .popup, .input-form {
         width: calc(100vw - 60px); /* 화면 너비에 맞춰 조정 */
         max-width: 300px; /* 너무 커지지 않도록 최대 너비 설정 */
-      }
+      } /* 팝업/폼 너비 조정 */
     }
   </style>
 </head>
@@ -130,9 +130,10 @@
   <span>by.mapker</span>
 </header>
 <div id="map"></div>
-<button id="toggleControlsBtn">🔍 검색 열기/닫기</button> <div id="controls">
+<button id="toggleControlsBtn">🔍 검색 열기/닫기</button> 
+<div id="controls">
   <label for="search">점포명</label>
-  <input type="text" id="search" placeholder="점포명 검색" />
+  <input type="text" id="search" placeholder="점포명 검색 (Enter)" />
   <label for="startYear">시작 연도</label>
   <input type="number" id="startYear" placeholder="시작 연도" value="2025" />
   <label for="endYear">종료 연도</label>
@@ -150,359 +151,520 @@
 </div>
 
   <script>
+    /* 전역 변수 선언 */
+    // 지도, 클러스터러, 지오코더 객체 및 마커 관련 변수들
+    let map, clusterer, geocoder, searchMarker = null, currentMarker = null;
+    // 모든 상점 데이터, 사용자 추가 데이터, 현재 지도에 표시된 마커, 정보창 객체
+    let allData = [], userData = [], markers = [], infowindow = null;
 
-    /* 전역 변수 */
-let map, clusterer, geocoder, searchMarker = null, currentMarker = null;
-let allData = [], userData = [], markers = [], infowindow = null;
-let editingStoreId = null;
-
-    // 지도 초기화 //
-    document.addEventListener("DOMContentLoaded", function() {
-      
-        const markerIcons = {
+    // 마커 아이콘 이미지 URL 정의 (전역 변수로 이동)
+    // 이 객체는 지도 로드 전부터 접근 가능해야 하므로 전역에 선언합니다.
+    const markerIcons = {
         violet: 'https://mapmarker.io/api/v1/pin?size=100&background=%238e44ad&icon=fa-store&color=fff',
         blue: 'https://mapmarker.io/api/v1/pin?size=100&background=%233498db&icon=fa-store&color=fff',
         yellow: 'https://mapmarker.io/api/v1/pin?size=100&background=%23f1c40f&icon=fa-store&color=fff',
         red: 'https://mapmarker.io/api/v1/pin?size=100&background=%23e74c3c&icon=fa-store&color=fff',
         green: 'https://mapmarker.io/api/v1/pin?size=100&background=%2327ae60&icon=fa-store&color=fff',
-        star: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
-        pin: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png'
-      };
+        star: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', // 사용자 추가 마커 아이콘
+        pin: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png' // 주소 검색 및 현재 위치 마커 아이콘
+    };
 
-      map = new kakao.maps.Map(document.getElementById("map"), {
-        center: new kakao.maps.LatLng(35.8714, 128.6014), level: 6
-      });
-      geocoder = new kakao.maps.services.Geocoder();
-      clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 6 });
-
-      // 지도의 'idle' 이벤트 리스너 추가
-      kakao.maps.event.addListener(map, 'idle', render);
-
-      map.addListener("rightclick", e => showInputForm(e.latLng));
-      document.getElementById("addrSearch").addEventListener("keypress", e => { if (e.key === "Enter") searchAddress(); });
-      
-      // '점포명 검색' 입력 필드에서 Enter 키 눌렀을 때도 지도 이동 기능 추가
-      document.getElementById("search").addEventListener("input", triggerRenderAfterFilterChange);
-      document.getElementById("search").addEventListener("keypress", e => {
-        if (e.key === "Enter") {
-          triggerRenderAfterFilterChange(true); // Enter 시에는 지도 이동 강제 (true 전달)
-        }
-      });
-
-      document.getElementById("typeFilter").addEventListener("change", triggerRenderAfterFilterChange);
-      document.getElementById("startYear").addEventListener("input", triggerRenderAfterFilterChange);
-      document.getElementById("endYear").addEventListener("input", triggerRenderAfterFilterChange);
-
-      document.getElementById("exportBtn").addEventListener("click", exportCSV);
-      document.getElementById("locateBtn").addEventListener("click", goToCurrentLocation);
-
-      // 토글 버튼 이벤트 리스너 추가
-      document.getElementById("toggleControlsBtn").addEventListener("click", () => {
-        const controls = document.getElementById("controls");
-        if (controls.style.display === "none" || controls.style.display === "") {
-          controls.style.display = "flex";
-        } else {
-          controls.style.display = "none";
-        }
-      });
-
-
-      fetch("store_data.json")
-        .then(res => res.json())
-        .then(data => {
-          allData = data;
-          populateFilters();
-          render(); // 초기 로딩 시에도 render 호출
+    // --- DOMContentLoaded 이벤트 리스너 --- //
+    // HTML 문서 로드가 완료된 후 실행될 함수를 등록합니다.
+    document.addEventListener("DOMContentLoaded", function() {
+      // --- Kakao Maps SDK 로드 완료 후 실행될 콜백 함수 --- //
+      // Kakao Maps SDK가 완전히 로드된 후 지도 초기화 및 관련 로직을 시작합니다.
+      kakao.maps.load(function() {
+        // 지도 객체 생성
+        // 지도를 표시할 HTML 요소(#map)와 초기 중심 좌표(대구), 확대 레벨을 설정합니다.
+        map = new kakao.maps.Map(document.getElementById("map"), {
+            center: new kakao.maps.LatLng(35.8714, 128.6014), /* 대구광역시청 부근 */
+            level: 6 /* 지도 확대 레벨 (숫자가 작을수록 확대) */
+        });
+        // 지오코더 객체 생성 (주소를 좌표로 변환하거나, 좌표를 주소로 변환하는 서비스)
+        geocoder = new kakao.maps.services.Geocoder();
+        // 마커 클러스터러 객체 생성
+        // 마커가 많을 때 겹치지 않게 그룹화하여 보여주는 기능입니다.
+        clusterer = new kakao.maps.MarkerClusterer({ 
+            map: map, /* 클러스터러를 적용할 지도 객체 */
+            averageCenter: true, /* 클러스터링된 마커의 평균 위치를 클러스터 마커의 위치로 설정 */
+            minLevel: 6 /* 클러스터링을 시작할 최소 지도 레벨 */
         });
 
-      function triggerRenderAfterFilterChange(mapMoveToResult = false) {
-        render(mapMoveToResult); // mapMoveToResult 값을 render 함수로 전달
-      }
+        // 지도 'idle' 이벤트 리스너: 지도 이동/줌 변경 완료 시 마커 재렌더링
+        // 지도가 정지(idle) 상태가 되면, 화면에 보이는 영역에 맞춰 마커를 다시 그립니다.
+        kakao.maps.event.addListener(map, 'idle', render);
 
-      function getMarkerImage(name, isUser) {
+        // 지도 우클릭 이벤트 리스너: 정보 입력 폼 표시
+        // 지도 위에서 마우스 오른쪽 버튼을 클릭하면, 새로운 마커 정보를 입력할 폼을 띄웁니다.
+        map.addListener("rightclick", e => showInputForm(e.latLng));
+        
+        // 주소 검색 입력 필드 'Enter' 키 이벤트 리스너
+        // 주소 검색 입력란에서 Enter 키를 누르면 주소 검색 함수를 실행합니다.
+        document.getElementById("addrSearch").addEventListener("keypress", e => { 
+            if (e.key === "Enter") {
+                e.preventDefault(); /* 기본 Enter 동작(폼 제출 등) 방지 */
+                searchAddress(); /* 주소 검색 함수 호출 */
+            }
+        });
+      
+        // 점포명 검색 입력 필드 'Enter' 키 이벤트 리스너
+        // 점포명 검색 입력란에서 Enter 키를 누르면 필터링 및 렌더링 함수를 실행합니다.
+        document.getElementById("search").addEventListener("keypress", e => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                triggerRenderAfterFilterChange(true); /* 검색 결과로 지도 이동 옵션을 true로 설정 */
+            }
+        });
+
+        // 필터 변경 이벤트 리스너 (구분, 시작 연도, 종료 연도)
+        // 필터 값이 변경되면 마커를 재렌더링합니다. (지도 이동 옵션은 false)
+        document.getElementById("typeFilter").addEventListener("change", () => triggerRenderAfterFilterChange(false));
+        document.getElementById("startYear").addEventListener("input", () => triggerRenderAfterFilterChange(false));
+        document.getElementById("endYear").addEventListener("input", () => triggerRenderAfterFilterChange(false));
+
+        // 기능 버튼 이벤트 리스너
+        document.getElementById("exportBtn").addEventListener("click", exportCSV); /* 엑셀 저장 버튼 */
+        document.getElementById("locateBtn").addEventListener("click", goToCurrentLocation); /* 내 위치 버튼 */
+
+        // 컨트롤 패널 토글 버튼 이벤트 리스너 (모바일용)
+        // '검색 열기/닫기' 버튼 클릭 시 검색 필터 패널을 토글합니다.
+        document.getElementById("toggleControlsBtn").addEventListener("click", () => {
+            const controls = document.getElementById("controls");
+            controls.style.display = (controls.style.display === "none" || controls.style.display === "") ? "flex" : "none";
+        });
+
+        // 상점 데이터 로드 (store_data.json)
+        // 서버에서 'store_data.json' 파일을 비동기적으로 가져옵니다.
+        fetch("store_data.json")
+            .then(res => {
+                // 응답이 성공적이지 않으면 에러를 발생시킵니다.
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json(); // JSON 형식으로 파싱합니다.
+            })
+            .then(data => {
+                allData = data; // 불러온 데이터를 allData 배열에 저장합니다.
+                populateFilters(); // 필터 옵션(구분)을 동적으로 채웁니다.
+                render();         // 초기 마커 렌더링을 시작합니다.
+            })
+            .catch(error => {
+                // 데이터 로드 중 에러 발생 시 콘솔에 에러를 기록하고 사용자에게 알립니다.
+                console.error("Error fetching store_data.json:", error);
+                alert("상점 데이터를 불러오는 데 실패했습니다. 파일을 확인해주세요.");
+            });
+      }); // kakao.maps.load() 콜백 종료
+    }); // DOMContentLoaded 이벤트 리스너 종료
+
+    // --- 함수 정의 --- //
+
+    // 필터 변경 후 렌더링을 트리거하는 헬퍼 함수
+    function triggerRenderAfterFilterChange(mapMoveToResult = false) {
+        render(mapMoveToResult);
+    }
+
+    // 마커 이미지 URL을 결정하는 함수
+    // 상점 이름과 사용자 마커 여부에 따라 다른 아이콘을 반환합니다.
+    function getMarkerImage(name, isUser) {
+        const lowerName = name.toLowerCase();
         if (isUser) return new kakao.maps.MarkerImage(markerIcons.star, new kakao.maps.Size(30, 30));
-        if (name.includes('CU')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(40, 40));
-        if (name.includes('지에스') || name.includes('GS')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(40, 40));
-        if (name.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(40, 40));
-        if (name.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(40, 40));
+        if (lowerName.includes('cu')) return new kakao.maps.MarkerImage(markerIcons.violet, new kakao.maps.Size(40, 40));
+        if (lowerName.includes('지에스') || lowerName.includes('gs')) return new kakao.maps.MarkerImage(markerIcons.blue, new kakao.maps.Size(40, 40));
+        if (lowerName.includes('이마트24')) return new kakao.maps.MarkerImage(markerIcons.yellow, new kakao.maps.Size(40, 40));
+        if (lowerName.includes('세븐')) return new kakao.maps.MarkerImage(markerIcons.red, new kakao.maps.Size(40, 40));
         return new kakao.maps.MarkerImage(markerIcons.green, new kakao.maps.Size(40, 40));
-      }
+    }
 
-      function populateFilters() {
-        const years = new Set(), types = new Set();
+    // '구분' 필터의 옵션을 동적으로 채우는 함수
+    function populateFilters() {
+        const types = new Set(); // 중복 없는 타입 목록을 저장하기 위한 Set
         allData.forEach(d => {
-          if (d['인허가일자']) years.add(d['인허가일자'].substring(0, 4));
-          if (d['구분']) types.add(d['구분']);
+            if (d['구분']) types.add(d['구분']); // 데이터에 '구분' 필드가 있으면 Set에 추가
         });
         const typeSel = document.getElementById("typeFilter");
+        // Set을 배열로 변환 후 정렬하여 드롭다운 옵션으로 추가
         [...types].sort().forEach(t => {
-          const opt = document.createElement("option");
-          opt.value = t; opt.text = t;
-          typeSel.appendChild(opt);
+            const opt = document.createElement("option");
+            opt.value = t; // 옵션 값
+            opt.text = t;  // 옵션 텍스트
+            typeSel.appendChild(opt);
         });
-      }
+    }
 
-      function render(mapMoveToResult = false) {
-        clusterer.clear();
-        markers.forEach(m => m.setMap(null));
-        markers = [];
+    // 지도에 마커를 렌더링(표시)하는 핵심 함수
+    function render(mapMoveToResult = false) {
+        // 지도 또는 클러스터러 객체가 초기화되지 않았으면 경고 메시지 출력 후 함수 종료
+        if (!map || !clusterer) {
+             console.warn("Map or Clusterer not initialized yet. Render aborted.");
+             return;
+        }
+        clusterer.clear(); // 기존 클러스터러의 모든 마커를 제거
+        markers.forEach(m => m.setMap(null)); // 기존 마커들을 지도에서 제거
+        markers = []; // 마커 배열 초기화
 
-        const keyword = document.getElementById("search").value.trim();
-        const startYear = parseInt(document.getElementById("startYear").value, 10);
-        const endYear = parseInt(document.getElementById("endYear").value, 10);
-        const type = document.getElementById("typeFilter").value;
+        // 검색 및 필터링 조건 가져오기
+        const keyword = document.getElementById("search").value.trim().toLowerCase();
+        const startYearVal = document.getElementById("startYear").value;
+        const endYearVal = document.getElementById("endYear").value;
+        const startYear = parseInt(startYearVal, 10) || 0; // 유효하지 않으면 0으로 설정
+        const endYear = parseInt(endYearVal, 10) || Infinity; // 유효하지 않으면 무한대로 설정
+        const type = document.getElementById("typeFilter").value; // 선택된 구분 필터 값
 
+        // 현재 지도의 보이는 영역(bounds) 가져오기
         const bounds = map.getBounds();
-        const southWest = bounds.getSouthWest();
-        const northEast = bounds.getNorthEast();
+        const southWest = bounds.getSouthWest(); // 남서쪽 좌표
+        const northEast = bounds.getNorthEast(); // 북동쪽 좌표
 
+        // 필터링된 데이터 목록 생성
         const filtered = [...allData, ...userData].filter(d => {
-          const name = d['사업장명'] ?? d['점포명'] ?? '';
-          const date = (d['인허가일자'] ?? d['수정일'])?.substring(0, 4);
-          const matchName = !keyword || name.includes(keyword);
-          const matchYear = (!startYear || !endYear) || (date >= startYear && date <= endYear);
-          const matchType = type === "all" || (d['구분'] ?? "추진 물건") === type;
+            const name = (d['사업장명'] ?? d['점포명'] ?? '').toLowerCase(); // 상점 이름 (소문자로 변환)
+            const itemYearStr = (d['인허가일자'] ?? d['수정일'])?.substring(0, 4); // 연도 문자열 추출
+            const itemYear = parseInt(itemYearStr, 10); // 연도를 숫자로 변환
 
-          const lat = parseFloat(d.lat);
-          const lon = parseFloat(d.lon);
-          
-          const inBounds = (lat >= southWest.getLat() && lat <= northEast.getLat()) &&
+            const matchName = !keyword || name.includes(keyword); // 점포명 검색어 일치 여부
+            
+            let matchYear = true;
+            // 연도 필터링 로직
+            if (startYearVal && endYearVal) {
+                 matchYear = (!itemYear || isNaN(itemYear)) ? false : (itemYear >= startYear && itemYear <= endYear);
+            } else if (startYearVal) {
+                 matchYear = (!itemYear || isNaN(itemYear)) ? false : (itemYear >= startYear);
+            } else if (endYearVal) {
+                 matchYear = (!itemYear || isNaN(itemYear)) ? false : (itemYear <= endYear);
+            }
+
+            const matchType = type === "all" || (d['구분'] ?? "추진 물건") === type; // 구분 필터 일치 여부
+
+            // 필터링 조건에 하나라도 맞지 않으면 false 반환 (마커 표시 안 함)
+            if (!matchName || !matchYear || !matchType) {
+                return false;
+            }
+
+            // 검색어 입력 시, 검색 결과로 지도 이동 옵션이 true이면 일단 필터링된 것으로 간주
+            // (이후에 해당 마커들로 지도를 이동시킬 때 사용)
+            if (keyword && mapMoveToResult) { 
+                return true;
+            }
+            
+            const lat = parseFloat(d.lat); // 위도 값을 숫자로 변환
+            const lon = parseFloat(d.lon); // 경도 값을 숫자로 변환
+
+            // 위도/경도가 유효하지 않으면 false 반환
+            if (isNaN(lat) || isNaN(lon)) {
+                return false; 
+            }
+            
+            // 현재 지도의 보이는 영역 안에 있는지 확인
+            const inBounds = (lat >= southWest.getLat() && lat <= northEast.getLat()) &&
                            (lon >= southWest.getLng() && lon <= northEast.getLng());
-          
-          return matchName && matchYear && matchType && (keyword ? true : inBounds);
+            
+            return inBounds; // 영역 안에 있으면 true 반환
         });
 
-        if (mapMoveToResult && filtered.length > 0) {
+        // 검색 결과가 있고 지도 이동 옵션이 true일 경우, 지도 이동
+        if (mapMoveToResult && filtered.length > 0 && keyword) {
             if (filtered.length === 1) {
+                // 결과가 하나일 경우 해당 마커로 지도 중심 이동 및 확대
                 const targetStore = filtered[0];
                 const moveLatLon = new kakao.maps.LatLng(parseFloat(targetStore.lat), parseFloat(targetStore.lon));
                 map.setCenter(moveLatLon);
                 map.setLevel(4);
             } else {
-                const bounds = new kakao.maps.LatLngBounds();
+                // 결과가 여러 개일 경우 모든 마커를 포함하는 영역으로 지도 이동
+                const boundsForMove = new kakao.maps.LatLngBounds();
                 filtered.forEach(store => {
-                    bounds.extend(new kakao.maps.LatLng(parseFloat(store.lat), parseFloat(store.lon)));
+                    boundsForMove.extend(new kakao.maps.LatLng(parseFloat(store.lat), parseFloat(store.lon)));
                 });
-                map.setBounds(bounds);
+                map.setBounds(boundsForMove);
             }
         }
 
-
+        // 필터링된 데이터를 바탕으로 마커 생성 및 지도에 추가
         filtered.forEach(store => {
-          const lat = parseFloat(store.lat), lon = parseFloat(store.lon);
-          const name = store['사업장명'] ?? store['점포명'] ?? '';
-          const isUser = !!store['점포명'];
-          const marker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(lat, lon),
-            image: getMarkerImage(name, isUser)
-          });
-          marker.setMap(map);
-          markers.push(marker);
+            const lat = parseFloat(store.lat);
+            const lon = parseFloat(store.lon);
+            // 유효하지 않은 좌표는 건너뜁니다.
+            if (isNaN(lat) || isNaN(lon)) {
+                console.warn("Invalid lat/lon for store:", store);
+                return; 
+            }
 
-          const popup = document.createElement("div");
-          popup.className = "popup";
-          popup.innerHTML = `<button class='close-btn' onclick='window.infowindow.close()'>✖</button>`;
-       
-          if (isUser) { // 사용자 추가 마커 (추진 물건)
-            popup.innerHTML += `
-              <div><strong>${store['점포명']}</strong></div>
-              <div>담당자: ${store['담당자']}</div>
-              <div>개발팀: ${store['개발팀']}</div>
-              <div>면적: ${store['면적']}</div>
-              <div>보증금: ${store['보증금']}</div>
-              <div>권리금: ${store['권리금']}</div>
-              <div>임차료: ${store['임차료']}</div>
-              <div>수정일: ${store['수정일']}</div>
-              <a href='https://map.kakao.com/link/map/${encodeURIComponent(store["점포명"] ?? "")},${store.lat},${store.lon}' target='_blank'>📍 카카오맵에서 보기</a>
-              <div style="margin-top: 10px;"> 
-                <button onclick="deleteData('${store.id}')">🗑️ 삭제</button>
-              </div>`;
-          } else { // 인허가 마커 (기존 데이터)
-            const memoKey = lat + "," + lon;
-            const memo = localStorage.getItem(memoKey) || "";
-            const now = new Date().toLocaleString();
-            popup.innerHTML += `
-              <div><strong>${store['사업장명']}</strong></div>
-              <div>${store['인허가일자']}</div>
-              <a href='https://map.kakao.com/link/search/${encodeURIComponent(store["사업장명"] ?? "")}' target='_blank'>📍 카카오맵에서 보기</a>
-              <textarea>${memo}</textarea><br>
-              <small>🕒 ${now}</small><br>
-              <button onclick="saveMemo('${memoKey}', this)">💾 저장</button>
-              <button onclick="deleteMemo('${memoKey}', this)">❌ 삭제</button>`;
-          }
+            const name = store['사업장명'] ?? store['점포명'] ?? ''; // 상점 이름 (사업장명 또는 점포명)
+            const isUser = !!store['점포명']; // '점포명' 필드가 있으면 사용자 추가 데이터로 간주
+            // Kakao Maps 마커 객체 생성
+            const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(lat, lon), // 마커 위치
+                image: getMarkerImage(name, isUser) // 마커 이미지 설정
+            });
+            markers.push(marker); // 마커 배열에 추가
 
-          kakao.maps.event.addListener(marker, 'click', function() {
-            if (infowindow) infowindow.close();
-            infowindow = new kakao.maps.InfoWindow({ content: popup });
-            infowindow.open(map, marker);
-            window.infowindow = infowindow;
-          });
+            // 마커 클릭 시 표시될 정보창(팝업)의 내용 생성
+            const popupContent = createPopupContent(store, isUser, lat, lon);
+            
+            // 마커 클릭 이벤트 리스너 등록
+            kakao.maps.event.addListener(marker, 'click', function() {
+                if (infowindow) infowindow.close(); // 이미 열려있는 정보창이 있으면 닫기
+                // 새로운 정보창 생성 및 열기
+                infowindow = new kakao.maps.InfoWindow({ 
+                    content: popupContent, // 정보창 내용
+                    removable: true // 닫기 버튼 표시 여부
+                }); 
+                infowindow.open(map, marker); // 지도에 정보창 표시
+                window.infowindow = infowindow; // 전역 infowindow 변수에 할당 (닫기 버튼에서 접근 위함)
+            });
         });
+        clusterer.addMarkers(markers); // 클러스터러에 마커 추가
+    }
+    
+    // 마커 정보창(팝업)의 HTML 내용을 생성하는 함수
+    function createPopupContent(store, isUser, lat, lon) {
+        const popupDiv = document.createElement("div");
+        popupDiv.className = "popup";
+        
+        // 닫기 버튼 생성
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-btn';
+        closeButton.innerHTML = '✖';
+        closeButton.onclick = () => { if (window.infowindow) window.infowindow.close(); }; // 클릭 시 정보창 닫기
+        popupDiv.appendChild(closeButton);
 
-        clusterer.addMarkers(markers);
-      }
+        // 상점 이름 표시
+        const title = document.createElement('div');
+        title.innerHTML = `<strong>${store['사업장명'] ?? store['점포명']}</strong>`;
+        popupDiv.appendChild(title);
 
-      function generateUniqueId() {
+        // 사용자 추가 데이터(추진 물건)일 경우의 정보창 내용
+        if (isUser) {
+            popupDiv.innerHTML += `
+                <div>담당자: ${store['담당자'] || '-'}</div>
+                <div>개발팀: ${store['개발팀'] || '-'}</div>
+                <div>면적: ${store['면적'] || '-'}</div>
+                <div>보증금: ${store['보증금'] || '-'}</div>
+                <div>권리금: ${store['권리금'] || '-'}</div>
+                <div>임차료: ${store['임차료'] || '-'}</div>
+                <div>수정일: ${store['수정일'] || '-'}</div>
+                <a href='https://map.kakao.com/link/map/${encodeURIComponent(store["점포명"] ?? "")},${lat},${lon}' target='_blank'>📍 카카오맵에서 보기</a>
+                <div style="margin-top: 10px;"> 
+                <button onclick="deleteData('${store.id}')">🗑️ 삭제</button>
+                </div>`;
+        } else {
+            // 일반 상점 데이터일 경우의 정보창 내용 (메모 기능 포함)
+            const memoKey = lat + "," + lon; // 메모 저장을 위한 고유 키 (위도,경도 조합)
+            const memo = localStorage.getItem(memoKey) || ""; // 로컬 스토리지에서 메모 불러오기
+            const now = new Date().toLocaleString(); // 현재 시간 (최종 저장 시간 표시용)
+            popupDiv.innerHTML += `
+                <div>${store['인허가일자'] || '-'}</div>
+                <a href='https://map.kakao.com/link/search/${encodeURIComponent(store["사업장명"] ?? "")}' target='_blank'>📍 카카오맵에서 검색</a>
+                <textarea placeholder="메모 입력...">${memo}</textarea><br>
+                <small>🕒 최종 저장: ${now}</small><br>
+                <button onclick="saveMemo('${memoKey}', this.parentElement.querySelector('textarea').value)">💾 저장</button>
+                <button onclick="deleteMemo('${memoKey}', this.parentElement.querySelector('textarea'))">❌ 삭제</button>`;
+        }
+        return popupDiv;
+    }
+
+    // 사용자 데이터에 대한 고유 ID를 생성하는 함수
+    function generateUniqueId() {
         return 'id-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
-      }
+    }
 
-      function showInputForm(latlng) {
-        if (infowindow) infowindow.close();
+    // 지도 우클릭 시 정보 입력 폼을 표시하는 함수
+    function showInputForm(latlng) {
+        if (infowindow) infowindow.close(); // 기존 정보창 닫기
 
-        const now = new Date().toISOString().split("T")[0];
+        const now = new Date().toISOString().split("T")[0]; // 현재 날짜 (YYYY-MM-DD)
         const div = document.createElement("div");
         div.className = "input-form";
         div.innerHTML = `
-          <strong>물건 정보 입력</strong><br>
-          담당자: <input id="mgr"><br>
-          개발팀: <input id="team"><br>
-          점포명: <input id="name"><br>
-          면적: <input id="size"><br>
-          보증금: <input id="deposit"><br>
-          권리금: <input id="premium"><br>
-          임차료: <input id="rent"><br>
-          수정일: <input id="date" value="${now}"><br>
-          <button onclick="addUserData(${latlng.getLat()}, ${latlng.getLng()}, this)">저장</button>
-          <button onclick="removeInputWindow()">취소</button>
-          <button onclick="deleteDataByLatLng(${latlng.getLat()}, ${latlng.getLng()})">🗑️ 삭제</button>
+            <strong>물건 정보 입력</strong><br>
+            담당자: <input id="mgr" type="text"><br>
+            개발팀: <input id="team" type="text"><br>
+            점포명: <input id="name" type="text"><br>
+            면적: <input id="size" type="text"><br>
+            보증금: <input id="deposit" type="text"><br>
+            권리금: <input id="premium" type="text"><br>
+            임차료: <input id="rent" type="text"><br>
+            수정일: <input id="date" type="date" value="${now}"><br>
+            <button onclick="addUserData(${latlng.getLat()}, ${latlng.getLng()}, this.parentElement)">저장</button>
+            <button onclick="removeInputWindow()">취소</button>
+            <button onclick="deleteDataByLatLng(${latlng.getLat()}, ${latlng.getLng()})">🗑️ 현재 위치 마커 삭제</button>
         `;
 
-        infowindow = new kakao.maps.InfoWindow({ position: latlng, content: div });
+        // 정보창을 생성하고 지도에 엽니다.
+        infowindow = new kakao.maps.InfoWindow({ position: latlng, content: div, removable: true });
         infowindow.open(map);
-        window.infowindow = infowindow;
-        window.infowindowDom = div;
-      }
+        window.infowindow = infowindow; // 전역 infowindow 변수에 할당
+    }
 
-      window.removeInputWindow = function() {
+    // 입력 폼 정보창을 닫는 함수
+    window.removeInputWindow = function() {
         if (window.infowindow) window.infowindow.close();
-        if (window.infowindowDom) window.infowindowDom.remove();
-        window.infowindowDom = null;
-      }
+    }
 
-      window.addUserData = function(lat, lon, el) {
-        const p = el.parentElement;
+    // 사용자 데이터를 추가하는 함수
+    window.addUserData = function(lat, lon, parentEl) {
         const d = {
-            id: generateUniqueId(),
-            구분: "추진 물건",
-            lat, lon,
-            담당자: p.querySelector("#mgr").value,
-            개발팀: p.querySelector("#team").value,
-            점포명: p.querySelector("#name").value,
-            면적: p.querySelector("#size").value,
-            보증금: p.querySelector("#deposit").value,
-            권리금: p.querySelector("#premium").value,
-            임차료: p.querySelector("#rent").value,
-            수정일: p.querySelector("#date").value
+            id: generateUniqueId(), // 고유 ID 생성
+            구분: "추진 물건", // 사용자 데이터는 '추진 물건'으로 분류
+            lat: lat, 
+            lon: lon,
+            담당자: parentEl.querySelector("#mgr").value,
+            개발팀: parentEl.querySelector("#team").value,
+            점포명: parentEl.querySelector("#name").value,
+            면적: parentEl.querySelector("#size").value,
+            보증금: parentEl.querySelector("#deposit").value,
+            권리금: parentEl.querySelector("#premium").value,
+            임차료: parentEl.querySelector("#rent").value,
+            수정일: parentEl.querySelector("#date").value
         };
-        userData.push(d);
-        render();
-        if (infowindow) infowindow.close();
-      }
+        userData.push(d); // userData 배열에 새 데이터 추가
+        render(); // 마커 재렌더링
+        if (infowindow) infowindow.close(); // 정보창 닫기
+    }
 
-      window.saveMemo = function(key, el) {
-        const val = el.parentElement.querySelector("textarea").value;
-        localStorage.setItem(key, val);
-        alert("저장되었습니다.");
+    // 마커 메모를 로컬 스토리지에 저장하는 함수
+    window.saveMemo = function(key, value) {
+        localStorage.setItem(key, value); // key-value 형태로 저장
+        alert("메모가 저장되었습니다.");
         if (infowindow) infowindow.close();
-      }
+    }
 
-      window.deleteMemo = function(key, el) {
-        localStorage.removeItem(key);
-        el.parentElement.querySelector("textarea").value = "";
-        alert("삭제되었습니다.");
+    // 마커 메모를 로컬 스토리지에서 삭제하는 함수
+    window.deleteMemo = function(key, textareaElement) {
+        localStorage.removeItem(key); // 해당 키의 데이터 삭제
+        if (textareaElement) textareaElement.value = ""; // 텍스트 에리아 내용 지우기
+        alert("메모가 삭제되었습니다.");
         if (infowindow) infowindow.close();
-      }
+    }
 
-      function exportCSV() {
+    // 사용자 데이터를 CSV 파일로 내보내는 함수
+    function exportCSV() {
+        if (userData.length === 0) {
+            alert("엑셀로 저장할 사용자 데이터가 없습니다.");
+            return;
+        }
+        // CSV 헤더와 데이터 행 생성
         const rows = [["담당자","개발팀","점포명","면적","보증금","권리금","임차료","수정일","위도","경도"]];
         userData.forEach(d => {
-          rows.push([d.담당자, d.개발팀, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon]);
+            rows.push([d.담당자, d.개발팀, d.점포명, d.면적, d.보증금, d.권리금, d.임차료, d.수정일, d.lat, d.lon]);
         });
+        // BOM (Byte Order Mark) 추가: 엑셀에서 한글 깨짐 방지
         const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-        const blob = new Blob([bom, rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n")], {
-          type: "text/csv;charset=utf-8;"
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "물건정보.csv";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-
-      function searchAddress() {
-        const keyword = document.getElementById("addrSearch").value;
-        geocoder.addressSearch(keyword, (result, status) => {
-          if (status === kakao.maps.services.Status.OK) {
-            const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
-            map.setCenter(loc);
-            if (searchMarker) searchMarker.setMap(null);
-            searchMarker = new kakao.maps.Marker({
-              map, position: loc,
-              image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
-            });
-            render(); // 주소 검색 후 지도가 이동했으므로, 해당 뷰포트의 마커 렌더링
-          } else {
-            alert("주소를 찾을 수 없습니다.");
-          }
-        });
-      }
-
-      function goToCurrentLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(pos => {
-            const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-            map.setCenter(latlng);
-            if (currentMarker) currentMarker.setMap(null);
-            currentMarker = new kakao.maps.Marker({
-              map, position: latlng,
-              image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
-            });
-            render(); // 현재 위치 이동 후 해당 뷰포트의 마커 렌더링
-          }, () => alert("위치 정보를 가져올 수 없습니다."));
+        // CSV 내용 생성 (따옴표 처리 및 줄 바꿈)
+        const csvContent = rows.map(r => r.map(c => `"${(c === undefined || c === null) ? '' : String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+        // Blob 객체 생성
+        const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
+        
+        // 다운로드 링크 생성 및 클릭
+        const link = document.createElement("a");
+        if (link.download !== undefined) { // 'download' 속성을 지원하는 브라우저인 경우
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "물건정보.csv"); // 파일 이름 설정
+            link.style.visibility = 'hidden'; // 화면에 보이지 않게
+            document.body.appendChild(link); // DOM에 추가
+            link.click(); // 클릭 이벤트 발생시켜 다운로드
+            document.body.removeChild(link); // DOM에서 제거
+            URL.revokeObjectURL(url); // URL 해제
+        } else {
+            alert("CSV 다운로드를 지원하지 않는 브라우저입니다.");
         }
-      }
+    }
 
-      function saveData() {
-        // ... (기존 saveData 함수 내용, 현재는 사용되지 않음)
-      }
+    // 주소 검색 함수
+    function searchAddress() {
+        const keyword = document.getElementById("addrSearch").value;
+        if (!keyword.trim()) {
+            alert("검색할 주소를 입력해주세요.");
+            return;
+        }
+        // 지오코더를 사용하여 주소를 좌표로 변환
+        geocoder.addressSearch(keyword, (result, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+                // 검색된 첫 번째 결과의 좌표로 지도 이동
+                const loc = new kakao.maps.LatLng(result[0].y, result[0].x);
+                map.setCenter(loc);
+                map.setLevel(4); // 확대 레벨 조정
+                if (searchMarker) searchMarker.setMap(null); // 기존 검색 마커 제거
+                // 검색된 위치에 마커 표시
+                searchMarker = new kakao.maps.Marker({
+                    map: map, 
+                    position: loc,
+                    image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
+                });
+            } else {
+                alert("주소를 찾을 수 없습니다.");
+            }
+        });
+    }
 
-      window.deleteData = function(id) {
-        if (!confirm("정말 삭제하시겠습니까?")) {
-          return;
+    // 현재 위치로 지도를 이동하는 함수
+    function goToCurrentLocation() {
+        // Geolocation API 지원 여부 확인
+        if (navigator.geolocation) {
+            // 현재 위치 가져오기
+            navigator.geolocation.getCurrentPosition(pos => {
+                const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+                map.setCenter(latlng); // 현재 위치로 지도 중심 이동
+                map.setLevel(4); // 확대 레벨 조정
+                if (currentMarker) currentMarker.setMap(null); // 기존 현재 위치 마커 제거
+                // 현재 위치에 마커 표시
+                currentMarker = new kakao.maps.Marker({
+                    map: map, 
+                    position: latlng,
+                    image: new kakao.maps.MarkerImage(markerIcons.pin, new kakao.maps.Size(30, 30))
+                });
+            }, () => alert("위치 정보를 가져올 수 없습니다. 브라우저 설정을 확인해주세요."), {
+                enableHighAccuracy: true, // 높은 정확도 요청
+                timeout: 10000, // 10초 타임아웃
+                maximumAge: 0 // 캐시된 위치 정보 사용 안 함
+            });
+        } else {
+            alert("이 브라우저에서는 위치 정보 기능을 사용할 수 없습니다.");
+        }
+    }
+
+    // 특정 ID를 가진 사용자 데이터를 삭제하는 함수
+    window.deleteData = function(id) {
+        if (!id) {
+            alert("삭제할 데이터의 ID가 없습니다.");
+            return;
+        }
+        if (!confirm("정말 이 물건 정보를 삭제하시겠습니까?")) {
+            return;
         }
 
         const initialUserCount = userData.length;
+        // 삭제할 데이터를 제외하고 userData 배열을 재구성
         userData = userData.filter(item => item.id !== id);
 
         if (userData.length < initialUserCount) {
-          alert("삭제되었습니다.");
-          if (infowindow) infowindow.close();
-          render();
-          return;
+            alert("삭제되었습니다.");
+            if (infowindow) infowindow.close(); // 정보창 닫기
+            render(); // 마커 재렌더링
+        } else {
+            alert("삭제할 데이터를 찾을 수 없습니다. (ID: " + id + ")");
         }
+    };
 
-        alert("삭제할 데이터를 찾을 수 없습니다. (ID: " + id + ")");
-      };
-
-      window.deleteDataByLatLng = function(lat, lon) {
-        if (!confirm("정말 삭제하시겠습니까?")) {
-          return;
+    // 특정 위도/경도를 가진 모든 사용자 정의 마커를 삭제하는 함수
+    window.deleteDataByLatLng = function(lat, lon) {
+        if (!confirm("현재 위치에 추가된 모든 사용자 정의 마커를 삭제하시겠습니까?")) {
+            return;
         }
-
         const initialUserCount = userData.length;
-        userData = userData.filter(d => !(parseFloat(d.lat) === lat && parseFloat(d.lon) === lon));
+        // 해당 위도/경도에 있는 '추진 물건' 타입의 사용자 데이터를 필터링하여 삭제
+        userData = userData.filter(d => !(parseFloat(d.lat) === lat && parseFloat(d.lon) === lon && d.구분 === "추진 물건"));
 
         if (userData.length < initialUserCount) {
-          alert("삭제되었습니다.");
-          if (infowindow) infowindow.close();
-          render();
+            alert("해당 위치의 사용자 추가 마커가 삭제되었습니다.");
+            if (infowindow) infowindow.close(); // 정보창 닫기
+            render(); // 마커 재렌더링
         } else {
-          alert("삭제할 데이터를 찾을 수 없습니다.");
+            alert("삭제할 사용자 추가 마커를 찾을 수 없습니다.");
         }
-      };
-    });
+    };
   </script>
 </body>
 </html>
