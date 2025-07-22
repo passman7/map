@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title> 우리의 대동여지도 </title>
+  <title> 나만의 지도 </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d7e491600cda23ba800b2265c04daa63&libraries=services,clusterer"></script>
@@ -334,7 +334,13 @@
                  matchYear = (!itemYear || isNaN(itemYear)) ? false : (itemYear <= endYear);
             }
 
-            const matchType = type === "all" || (d['구분'] ?? "추진 물건") === type; // 구분 필터 일치 여부
+            // render() 함수의 filter 안
+const dType = (d['구분'] || '추진 물건').toString().trim();
+let typeMap = dType;
+if (dType.replace(/\s/g, '').includes("편의점")) typeMap = "브랜드편의점";
+else if (dType.replace(/\s/g, '').includes("소매인")) typeMap = "담배소매인";
+const matchType = type === "all" || typeMap === type;
+
 
             // 필터링 조건에 하나라도 맞지 않으면 false 반환 (마커 표시 안 함)
             if (!matchName || !matchYear || !matchType) {
@@ -348,7 +354,8 @@
             }
             
             const lat = parseFloat(d.lat); // 위도 값을 숫자로 변환
-            const lon = parseFloat(d.lon); // 경도 값을 숫자로 변환
+            const lon = d.lon !== undefined ? parseFloat(d.lon) :
+                        d.lng !== undefined ? parseFloat(d.lng) : NaN;
 
             // 위도/경도가 유효하지 않으면 false 반환
             if (isNaN(lat) || isNaN(lon)) {
@@ -382,13 +389,14 @@
 
         // 필터링된 데이터를 바탕으로 마커 생성 및 지도에 추가
         filtered.forEach(store => {
-            const lat = parseFloat(store.lat);
-            const lon = parseFloat(store.lon);
-            // 유효하지 않은 좌표는 건너뜁니다.
-            if (isNaN(lat) || isNaN(lon)) {
-                console.warn("Invalid lat/lon for store:", store);
-                return; 
-            }
+             const lat = parseFloat(store.lat);
+             const lon = store.lon !== undefined ? parseFloat(store.lon)
+               : store.lng !== undefined ? parseFloat(store.lng)
+               : NaN;
+    if (isNaN(lat) || isNaN(lon)) {
+        console.warn("Invalid lat/lon for store:", store);
+        return;
+    }
 
             const name = store['사업장명'] ?? store['점포명'] ?? ''; // 상점 이름 (사업장명 또는 점포명)
             const isUser = !!store['점포명']; // '점포명' 필드가 있으면 사용자 추가 데이터로 간주
